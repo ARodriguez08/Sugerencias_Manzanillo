@@ -17,7 +17,6 @@
                     <h5>Enlaces Útiles</h5>
                     <ul class="list-unstyled">
                         <li><a href="index.php" class="text-white"><i class="material-icons me-2">chevron_right</i>Inicio</a></li>
-                        <li><a href="index.php?page=faq" class="text-white"><i class="material-icons me-2">chevron_right</i>Preguntas Frecuentes</a></li>
                         <li><a href="index.php?page=contacto" class="text-white"><i class="material-icons me-2">chevron_right</i>Contacto</a></li>
                         <li><a href="index.php?page=terminos" class="text-white"><i class="material-icons me-2">chevron_right</i>Términos y Condiciones</a></li>
                         <li><a href="index.php?page=privacidad" class="text-white"><i class="material-icons me-2">chevron_right</i>Política de Privacidad</a></li>
