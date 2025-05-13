@@ -5,20 +5,10 @@ session_start();
 // Incluir controladores
 include_once './controlador/UsuarioController.php';
 include_once './controlador/DashboardController.php';
-// include_once './controlador/SugerenciaController.php';
-// include_once './controlador/SolicitudController.php';
-// include_once './controlador/CategoriaController.php';
-// include_once './controlador/ReporteController.php';
-// include_once './controlador/NotificacionController.php';
 
 // Crear instancias de controladores
 $usuarioControlador = new UsuarioControlador();
 $dashboardControlador = new DashboardControlador();
-// $sugerenciaControlador = new SugerenciaControlador();
-// $solicitudControlador = new SolicitudControlador();
-// $categoriaControlador = new CategoriaControlador();
-// $reporteControlador = new ReporteControlador();
-// $notificacionControlador = new NotificacionControlador();
 
 // Determinar la página a mostrar
 $page = isset($_GET['page']) ? $_GET['page'] : 'home';
@@ -116,6 +106,18 @@ switch ($page) {
     case 'ciudadano_dashboard':
         $datos_dashboard = $dashboardControlador->obtenerDatosCiudadanoDashboard($_SESSION['usuario_id']);
         include_once 'vista/ciudadano/dashboard.php';
+        break;
+    case 'contacto':
+        include_once 'vista/contacto.php';
+        break;
+    case 'terminos':
+        include_once 'vista/terminos.php';
+        break;
+    case 'privacidad':
+        include_once 'vista/privacidad.php';
+        break;
+    case 'faq':
+        include_once 'vista/faq.php';
         break;
     default:
         include_once 'vista/home.php';

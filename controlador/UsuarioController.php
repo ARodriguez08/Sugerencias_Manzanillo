@@ -126,5 +126,7 @@ class UsuarioControlador {
         header("Location: index.php");
         exit;
     }
+
+
 }
 ?>

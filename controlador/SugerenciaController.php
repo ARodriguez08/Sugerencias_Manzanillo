@@ -20,6 +20,20 @@ class SugerenciaController {
         $this->notificacion = new Notification($this->db);
     }
 
+    public function obtenerEstados() {
+        // Return an array of states or fetch them from the database
+        return ['Pendiente', 'En Proceso', 'Resuelto'];
+    }
+
+    public function obtenerSugerencias($page_num, $filtro, $estado) {
+        // Implement logic to fetch suggestions based on page number, filter, and state
+        // Example return value (replace with actual implementation):
+        return [
+            'sugerencias' => [], // Array of suggestions
+            'total_pages' => 1   // Total number of pages
+        ];
+    }
+
     // Procesar creación de nueva sugerencia
     public function crearSugerencia() {
         $mensaje = "";
