@@ -189,7 +189,7 @@
                         <label for="edit_rol_id" class="form-label">Rol</label>
                         <select class="form-select" id="edit_rol_id" name="rol_id" required>
                             <?php 
-                            $roles->execute();
+                            $roles->execute(); // Reset cursor before reusing
                             while ($rol = $roles->fetch(PDO::FETCH_ASSOC)): 
                             ?>
                                 <option value="<?php echo $rol['id']; ?>"><?php echo $rol['nombre']; ?></option>

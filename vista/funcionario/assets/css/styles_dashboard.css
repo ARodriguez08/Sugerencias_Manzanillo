@@ -1,0 +1,217 @@
+/* Dashboard de Funcionario - styles_dashboard.css */
+
+/* General */
+body {
+    background-color: #f8f9fc;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+/* Títulos y cabecera */
+.h1, .h3, .h6, .fw-normal {
+    font-weight: 600;
+}
+
+.text-gray-800 {
+    color: #5a5c69 !important;
+}
+
+.text-primary {
+    color: #4e73df !important;
+}
+.text-success {
+    color: #1cc88a !important;
+}
+.text-info {
+    color: #36b9cc !important;
+}
+.text-warning {
+    color: #f6c23e !important;
+}
+
+/* Botones */
+.btn-primary {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+.btn-success {
+    background-color: #1cc88a;
+    border-color: #1cc88a;
+}
+.btn-info {
+    background-color: #36b9cc;
+    border-color: #36b9cc;
+}
+.btn-warning {
+    background-color: #f6c23e;
+    border-color: #f6c23e;
+    color: #fff;
+}
+.btn-primary:hover, .btn-success:hover, .btn-info:hover, .btn-warning:hover {
+    opacity: 0.9;
+}
+
+/* Tarjetas resumen */
+.card {
+    border-radius: 0.5rem;
+    border: none;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58,59,69,.15);
+    margin-bottom: 1.5rem;
+}
+.card .card-header {
+    background: #fff;
+    border-bottom: 1px solid #f1f1f1;
+}
+.card .card-footer {
+    background: #fff;
+    border-top: 1px solid #f1f1f1;
+}
+.card .h5, .card .h6 {
+    font-weight: 700;
+}
+.card .progress {
+    height: 6px;
+    border-radius: 3px;
+}
+.card .progress-bar {
+    border-radius: 3px;
+}
+.border-left-primary {
+    border-left: 0.25rem solid #4e73df !important;
+}
+.border-left-success {
+    border-left: 0.25rem solid #1cc88a !important;
+}
+.border-left-info {
+    border-left: 0.25rem solid #36b9cc !important;
+}
+.border-left-warning {
+    border-left: 0.25rem solid #f6c23e !important;
+}
+
+/* Iconos en tarjetas */
+.card .fa-2x {
+    font-size: 2.2rem;
+    opacity: 0.3;
+}
+
+/* Tabla de solicitudes */
+.table {
+    font-size: 0.97rem;
+}
+.table thead th {
+    background: #f8f9fc;
+    color: #4e73df;
+    font-weight: 600;
+    border-bottom: 2px solid #e3e6f0;
+}
+.table-hover tbody tr:hover {
+    background-color: #f1f3fa;
+}
+.table td, .table th {
+    vertical-align: middle;
+}
+
+/* Badges */
+.badge {
+    font-size: 0.85em;
+    font-weight: 500;
+    padding: 0.45em 0.8em;
+    color: #fff;
+    border-radius: 1rem;
+    letter-spacing: 0.02em;
+}
+.badge.rounded-pill {
+    border-radius: 1rem;
+}
+
+/* List group para sugerencias/categorías */
+.list-group-item {
+    border: none;
+    border-bottom: 1px solid #f1f1f1;
+    background: transparent;
+    padding: 0.75rem 1rem;
+}
+.list-group-item:last-child {
+    border-bottom: none;
+}
+.list-group-item-action:hover, .list-group-item-action:focus {
+    background-color: #f8f9fc;
+}
+
+/* Progress bar en categorías lentas */
+.progress {
+    background-color: #e9ecef;
+}
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+/* Modal */
+.modal-content {
+    border-radius: 0.5rem;
+}
+.modal-header {
+    border-bottom: 1px solid #e3e6f0;
+}
+.modal-footer {
+    border-top: 1px solid #e3e6f0;
+}
+.form-label {
+    font-weight: 500;
+    color: #4e73df;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #4e73df;
+    box-shadow: 0 0 0 0.2rem rgba(78,115,223,.25);
+}
+
+/* Chart containers */
+.chart-area, .chart-pie {
+    position: relative;
+    height: 260px;
+    min-height: 220px;
+}
+@media (max-width: 991.98px) {
+    .chart-area, .chart-pie {
+        height: 200px;
+        min-height: 160px;
+    }
+}
+
+/* Small text and spacing */
+.small, .text-muted {
+    font-size: 0.92em !important;
+}
+.me-1 { margin-right: 0.25rem !important; }
+.me-2 { margin-right: 0.5rem !important; }
+.ms-2 { margin-left: 0.5rem !important; }
+.pt-4 { padding-top: 1.5rem !important; }
+.pb-2 { padding-bottom: 0.5rem !important; }
+.mt-2 { margin-top: 0.5rem !important; }
+.mt-4 { margin-top: 1.5rem !important; }
+.mb-0 { margin-bottom: 0 !important; }
+.mb-1 { margin-bottom: 0.25rem !important; }
+.mb-4 { margin-bottom: 1.5rem !important; }
+
+/* Alerts */
+.alert-info {
+    background: #e3f0fc;
+    color: #31708f;
+    border: none;
+    border-radius: 0.4rem;
+    padding: 0.8rem 1.2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    .card .card-header, .card .card-body, .card .card-footer {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    .table-responsive {
+        font-size: 0.95em;
+    }
+    .modal-dialog {
+        margin: 1.5rem auto;
+    }
+}

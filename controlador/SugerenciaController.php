@@ -4,7 +4,7 @@ include_once 'config/database.php';
 include_once 'config/security.php';
 include_once 'modelo/Sugerencia.php';
 include_once 'modelo/Categoria.php';
-include_once 'config/notification.php';
+include_once __DIR__ . '/../config/notification.php';
 
 class SugerenciaController {
     private $db;

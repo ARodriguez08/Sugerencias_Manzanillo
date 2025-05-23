@@ -51,7 +51,7 @@ switch ($orden) {
 
 // Consulta para obtener funcionarios
 $query = "SELECT 
-            u.id, u.nombre, u.apellidos, u.email, u.telefono, u.activo,
+            u.id, u.nombre, u.apellidos, u.email, u.telefono, u.direccion, u.activo,
             COUNT(s.id) as solicitudes_resueltas,
             AVG(DATEDIFF(s.fecha_resolucion, s.fecha_creacion)) as tiempo_promedio,
             COUNT(DISTINCT s.usuario_id) as ciudadanos_atendidos,
@@ -249,8 +249,8 @@ $estadisticas = $stmt_stats->fetch(PDO::FETCH_ASSOC);
                                 </div>
                             </td>
                             <td>
-                                <div><i class="fas fa-envelope me-1 text-muted"></i> <?php echo $funcionario['email']; ?></div>
-                                <div><i class="fas fa-phone me-1 text-muted"></i> <?php echo $funcionario['telefono'] ?: 'No disponible'; ?></div>
+                                <div><i class="fas fa-envelope me-1 text-muted"></i> <?php echo Security::escapeOutput($funcionario['email']); ?></div>
+                                <div><i class="fas fa-phone me-1 text-muted"></i> <?php echo Security::escapeOutput($funcionario['telefono']) ?: 'No disponible'; ?></div>
                             </td>
                             <td class="text-center">
                                 <span class="badge bg-success">
@@ -290,7 +290,7 @@ $estadisticas = $stmt_stats->fetch(PDO::FETCH_ASSOC);
                                         data-bs-toggle="modal" 
                                         data-bs-target="#cambiarEstadoModal" 
                                         data-id="<?php echo $funcionario['id']; ?>"
-                                        data-nombre="<?php echo htmlspecialchars($funcionario['nombre'] . ' ' . $funcionario['apellidos'], ENT_QUOTES); ?>"
+                                        data-nombre="<?php echo Security::escapeOutput($funcionario['nombre'] . ' ' . $funcionario['apellidos']); ?>"
                                         data-estado="<?php echo $funcionario['activo']; ?>">
                                     <i class="fas fa-<?php echo $funcionario['activo'] ? 'ban' : 'check'; ?>"></i>
                                 </button>

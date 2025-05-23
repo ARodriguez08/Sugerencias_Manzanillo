@@ -1,3 +1,8 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -31,19 +36,7 @@
 </head>
 <body>
     <?php 
-    // Incluir archivo de notificaciones
-    include_once 'config/notificacion.php';
-    
-    // Inicializar contador de notificaciones
-    $notificaciones_no_leidas = 0;
-    
-    // Si el usuario está autenticado, contar notificaciones no leídas
-    if (isset($_SESSION['usuario_id'])) {
-        $database = new Database();
-        $db = $database->getConnection();
-        $notificacion = new Notification($db);
-        $notificaciones_no_leidas = $notificacion->contarNoLeidas($_SESSION['usuario_id']);
-    }
+    // Notificaciones eliminadas
     ?>
     
     <header>
@@ -76,7 +69,7 @@
                             </li>
                         <?php else: ?>
                             <!-- Menú según el rol del usuario -->
-                            <?php if ($_SESSION['usuario_rol_id'] == 1): ?>
+                            <?php if (isset($_SESSION['usuario_rol_id']) && $_SESSION['usuario_rol_id'] == 1): ?>
                                 <!-- Menú de Administrador -->
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -93,16 +86,7 @@
                                                 <i class="material-icons me-1">group</i> Usuarios
                                             </a>
                                         </li>
-                                        <li>
-                                            <a class="dropdown-item" href="index.php?page=admin_solicitudes">
-                                                <i class="material-icons me-1">assignment_turned_in</i> Solicitudes
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item" href="index.php?page=admin_sugerencias">
-                                                <i class="material-icons me-1">lightbulb</i> Sugerencias
-                                            </a>
-                                        </li>
+                                        <!-- Botón de solicitudes eliminado -->
                                         <li>
                                             <a class="dropdown-item" href="index.php?page=admin_categorias">
                                                 <i class="material-icons me-1">label</i> Categorías
@@ -115,7 +99,7 @@
                                         </li>
                                     </ul>
                                 </li>
-                            <?php elseif ($_SESSION['usuario_rol_id'] == 2): ?>
+                            <?php elseif (isset($_SESSION['usuario_rol_id']) && $_SESSION['usuario_rol_id'] == 2): ?>
                                 <!-- Menú de Funcionario -->
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" href="#" id="funcionarioDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -127,16 +111,7 @@
                                                 <i class="material-icons me-1">dashboard</i> Dashboard
                                             </a>
                                         </li>
-                                        <li>
-                                            <a class="dropdown-item" href="index.php?page=funcionario_solicitudes">
-                                                <i class="material-icons me-1">assignment_turned_in</i> Solicitudes
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item" href="index.php?page=funcionario_sugerencias">
-                                                <i class="material-icons me-1">lightbulb</i> Sugerencias
-                                            </a>
-                                        </li>
+                                        <!-- Botón de solicitudes eliminado -->
                                         <li>
                                             <a class="dropdown-item" href="index.php?page=funcionario_reportes">
                                                 <i class="material-icons me-1">bar_chart</i> Reportes
@@ -161,11 +136,7 @@
                                                 <i class="material-icons me-1">add_circle</i> Nueva Solicitud
                                             </a>
                                         </li>
-                                        <li>
-                                            <a class="dropdown-item" href="index.php?page=nueva_sugerencia">
-                                                <i class="material-icons me-1">lightbulb</i> Nueva Sugerencia
-                                            </a>
-                                        </li>
+                                        <!-- Botón de solicitudes eliminado -->
                                         <li>
                                             <a class="dropdown-item" href="index.php?page=ciudadano_historial">
                                                 <i class="material-icons me-1">history</i> Historial
@@ -175,23 +146,13 @@
                                 </li>
                             <?php endif; ?>
                             
-                            <!-- Notificaciones para cualquier usuario autenticado -->
-                            <li class="nav-item">
-                                <a class="nav-link position-relative" href="index.php?page=notificaciones">
-                                    <i class="material-icons me-1">notifications</i> Notificaciones
-                                    <?php if ($notificaciones_no_leidas > 0): ?>
-                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                            <?php echo $notificaciones_no_leidas; ?>
-                                        </span>
-                                    <?php endif; ?>
-                                </a>
-                            </li>
+                            <!-- Notificaciones eliminadas -->
                             
                             <!-- Perfil de usuario -->
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="perfilDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="material-icons me-1">account_circle</i> 
-                                    <?php echo $_SESSION['usuario_nombre']; ?>
+                                    <?php echo isset($_SESSION['usuario_nombre']) ? htmlspecialchars($_SESSION['usuario_nombre']) : 'Usuario'; ?>
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="perfilDropdown">
                                     <li>

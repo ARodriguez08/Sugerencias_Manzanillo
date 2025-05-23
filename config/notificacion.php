@@ -20,14 +20,22 @@ class Notification {
         $mensaje = htmlspecialchars(strip_tags($mensaje));
         
         // Vincular valores
-        $stmt->bindParam(":usuario_id", $usuario_id);
-        $stmt->bindParam(":titulo", $titulo);
-        $stmt->bindParam(":mensaje", $mensaje);
-        $stmt->bindParam(":solicitud_id", $solicitud_id);
+        $stmt->bindParam(":usuario_id", $usuario_id, PDO::PARAM_INT);
+        $stmt->bindParam(":titulo", $titulo, PDO::PARAM_STR);
+        $stmt->bindParam(":mensaje", $mensaje, PDO::PARAM_STR);
+        if ($solicitud_id === null) {
+            $stmt->bindValue(":solicitud_id", null, PDO::PARAM_NULL);
+        } else {
+            $stmt->bindValue(":solicitud_id", $solicitud_id, PDO::PARAM_INT);
+        }
         
         // Ejecutar consulta
-        if ($stmt->execute()) {
-            return true;
+        try {
+            if ($stmt->execute()) {
+                return true;
+            }
+        } catch (PDOException $e) {
+            error_log("Error al crear notificación: " . $e->getMessage());
         }
         
         return false;

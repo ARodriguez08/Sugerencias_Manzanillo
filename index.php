@@ -49,7 +49,7 @@ if (in_array($page, $paginas_funcionario) && $_SESSION['usuario_rol_id'] != 2 &&
 $paginas_ciudadano = [
     'ciudadano_dashboard', 'ciudadano_solicitudes', 'ciudadano_sugerencias', 'ciudadano_historial'
 ];
-if (in_array($page, $paginas_ciudadano) && $_SESSION['usuario_rol_id'] != 3 && $_SESSION['usuario_rol_id'] != 1) {
+if (in_array($page, $paginas_ciudadano) && (!isset($_SESSION['usuario_rol_id']) || ($_SESSION['usuario_rol_id'] != 3 && $_SESSION['usuario_rol_id'] != 1))) {
     header("Location: index.php");
     exit;
 }

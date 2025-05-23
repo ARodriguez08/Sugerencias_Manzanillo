@@ -50,7 +50,7 @@ class DashboardControlador {
 
     // DashboardController.php - Funciones agregadas
     public function obtenerSolicitudesPorUsuario($usuario_id) {
-        return $this->solicitud->obtenerPorUsuario($usuario_id);
+        // return $this->solicitud->obtenerPorUsuario($usuario_id);
     }
 
     public function obtenerSolicitudesPorEstado($estado_id) {
@@ -91,7 +91,7 @@ class DashboardControlador {
         return [
             'total_solicitudes' => $this->solicitud->contarPorUsuario($usuario_id),
             'solicitudes_por_estado' => $this->solicitud->estadisticasPorEstadoUsuario($usuario_id),
-            'solicitudes_recientes' => $this->solicitud->obtenerPorUsuario($usuario_id, 5),
+            // 'solicitudes_recientes' => $this->solicitud->obtenerPorUsuario($usuario_id, 5),
             'evolucion_solicitudes' => $this->solicitud->evolucionSolicitudesUsuario($usuario_id),
             'tiempo_promedio' => $this->solicitud->tiempoPromedioResolucionUsuario($usuario_id)
         ];

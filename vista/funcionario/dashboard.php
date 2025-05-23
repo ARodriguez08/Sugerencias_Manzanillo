@@ -37,14 +37,12 @@ $notificacion = new Notification($db);
 $funcionario_id = $_SESSION['usuario_id'];
 
 // Obtener estadísticas
-// 1. Total de solicitudes asignadas al funcionario
 $query_total_solicitudes = "SELECT COUNT(*) as total FROM solicitudes WHERE funcionario_id = :funcionario_id";
 $stmt_total_solicitudes = $db->prepare($query_total_solicitudes);
 $stmt_total_solicitudes->bindParam(':funcionario_id', $funcionario_id);
 $stmt_total_solicitudes->execute();
 $total_solicitudes = $stmt_total_solicitudes->fetch(PDO::FETCH_ASSOC)['total'];
 
-// 2. Solicitudes por estado asignadas al funcionario
 $query_por_estado = "SELECT e.nombre, e.color, COUNT(s.id) as total 
                      FROM solicitudes s 
                      JOIN estados e ON s.estado_id = e.id 
@@ -55,13 +53,11 @@ $stmt_por_estado->bindParam(':funcionario_id', $funcionario_id);
 $stmt_por_estado->execute();
 $solicitudes_por_estado = $stmt_por_estado->fetchAll(PDO::FETCH_ASSOC);
 
-// 3. Sugerencias pendientes de revisión
-$query_sugerencias_pendientes = "SELECT COUNT(*) as total FROM sugerencias WHERE estado_id IN (1, 2)"; // 1: Nueva, 2: En revisión
+$query_sugerencias_pendientes = "SELECT COUNT(*) as total FROM sugerencias WHERE estado_id IN (1, 2)";
 $stmt_sugerencias_pendientes = $db->prepare($query_sugerencias_pendientes);
 $stmt_sugerencias_pendientes->execute();
 $sugerencias_pendientes = $stmt_sugerencias_pendientes->fetch(PDO::FETCH_ASSOC)['total'];
 
-// 4. Solicitudes recientes asignadas al funcionario (últimas 8)
 $query_recientes = "SELECT s.id, s.titulo, s.fecha_creacion, c.nombre as categoria, c.color as categoria_color, 
                     e.nombre as estado, e.color as estado_color, u.nombre as nombre_ciudadano, u.apellidos as apellidos_ciudadano
                     FROM solicitudes s 
@@ -71,8 +67,8 @@ $query_recientes = "SELECT s.id, s.titulo, s.fecha_creacion, c.nombre as categor
                     WHERE s.funcionario_id = :funcionario_id 
                     ORDER BY 
                         CASE 
-                            WHEN s.estado_id = 2 THEN 1 /* Asignada */
-                            WHEN s.estado_id = 3 THEN 2 /* En proceso */
+                            WHEN s.estado_id = 2 THEN 1
+                            WHEN s.estado_id = 3 THEN 2
                             ELSE 3
                         END,
                         s.fecha_creacion DESC 
@@ -82,7 +78,6 @@ $stmt_recientes->bindParam(':funcionario_id', $funcionario_id);
 $stmt_recientes->execute();
 $solicitudes_recientes = $stmt_recientes->fetchAll(PDO::FETCH_ASSOC);
 
-// 5. Sugerencias pendientes de revisión (últimas 5)
 $query_sugerencias = "SELECT s.id, s.titulo, s.fecha_creacion, 
                       c.nombre as categoria, c.color as categoria_color,
                       e.nombre as estado, e.color as estado_color,
@@ -98,7 +93,6 @@ $stmt_sugerencias = $db->prepare($query_sugerencias);
 $stmt_sugerencias->execute();
 $sugerencias_pendientes_list = $stmt_sugerencias->fetchAll(PDO::FETCH_ASSOC);
 
-// 6. Datos para el gráfico de rendimiento mensual
 $query_rendimiento = "SELECT 
                       DATE_FORMAT(fecha_resolucion, '%Y-%m') as mes, 
                       COUNT(*) as resueltas,
@@ -114,7 +108,6 @@ $stmt_rendimiento->bindParam(':funcionario_id', $funcionario_id);
 $stmt_rendimiento->execute();
 $rendimiento_data = $stmt_rendimiento->fetchAll(PDO::FETCH_ASSOC);
 
-// 7. Datos para el gráfico de solicitudes por categoría
 $query_categorias = "SELECT c.nombre, c.color, COUNT(s.id) as total 
                      FROM solicitudes s 
                      JOIN categorias c ON s.categoria_id = c.id 
@@ -126,10 +119,8 @@ $stmt_categorias->bindParam(':funcionario_id', $funcionario_id);
 $stmt_categorias->execute();
 $categorias_data = $stmt_categorias->fetchAll(PDO::FETCH_ASSOC);
 
-// 8. Estados disponibles para actualizar solicitudes
 $estados_disponibles = $estado->obtenerTodos();
 
-// 9. Tiempo promedio de resolución de solicitudes
 $query_tiempo = "SELECT AVG(DATEDIFF(fecha_resolucion, fecha_creacion)) as promedio 
                  FROM solicitudes 
                  WHERE funcionario_id = :funcionario_id AND fecha_resolucion IS NOT NULL";
@@ -139,7 +130,6 @@ $stmt_tiempo->execute();
 $tiempo_promedio = $stmt_tiempo->fetch(PDO::FETCH_ASSOC)['promedio'];
 $tiempo_promedio = $tiempo_promedio ? round($tiempo_promedio, 1) : 'N/A';
 
-// 10. Top categorías con más tiempo de resolución
 $query_top_categorias = "SELECT c.nombre, c.color, AVG(DATEDIFF(s.fecha_resolucion, s.fecha_creacion)) as tiempo_promedio, COUNT(s.id) as total
                          FROM solicitudes s
                          JOIN categorias c ON s.categoria_id = c.id
@@ -153,194 +143,94 @@ $stmt_top_categorias->execute();
 $top_categorias = $stmt_top_categorias->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
+<!-- Incluir CSS del dashboard -->
+<link rel="stylesheet" href="../funcionario/assets/css/styles_dashboard.css">
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+
 <!-- Cabecera del Dashboard -->
-<div class="row">
-    <div class="col-md-12">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">
-                <i class="fas fa-briefcase me-2"></i>Dashboard de Funcionario
-            </h1>
-            <div>
-                <a href="index.php?page=funcionario_solicitudes" class="btn btn-primary btn-sm">
-                    <i class="fas fa-clipboard-list me-1"></i> Gestionar Solicitudes
-                </a>
-                <a href="index.php?page=funcionario_sugerencias" class="btn btn-success btn-sm ms-2">
-                    <i class="fas fa-lightbulb me-1"></i> Revisar Sugerencias
-                </a>
-                <a href="index.php?page=funcionario_reportes" class="btn btn-info btn-sm ms-2">
-                    <i class="fas fa-chart-bar me-1"></i> Reportes
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Resumen de Solicitudes (Tarjetas) -->
-<div class="row">
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-normal text-primary text-uppercase mb-1">
-                            Solicitudes Asignadas</div>
-                        <div class="h5 mb-0 fw-normal text-gray-800"><?php echo $total_solicitudes; ?></div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-                <div class="progress progress-sm mt-2">
-                    <div class="progress-bar bg-primary" role="progressbar" style="width: 100%"></div>
-                </div>
-            </div>
-            <div class="card-footer bg-transparent border-0">
-                <a href="index.php?page=funcionario_solicitudes" class="text-primary">Ver todas <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
+<div class="container my-4">
+    <h1 class="mb-4">Dashboard de Funcionario</h1>
+    <div class="mb-4">
+        <!-- Botones que abren modales -->
+        <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#modalSolicitudes">Gestionar Solicitudes</button>
+        <button class="btn btn-secondary me-2" data-bs-toggle="modal" data-bs-target="#modalSugerencias">Revisar Sugerencias</button>
+        <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modalReportes">Reportes</button>
     </div>
 
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-success shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-normal text-success text-uppercase mb-1">
-                            Solicitudes Resueltas</div>
-                        <?php
-                        $resueltas = 0;
-                        foreach($solicitudes_por_estado as $estado) {
-                            if ($estado['nombre'] == 'Resuelta') {
-                                $resueltas = $estado['total'];
-                                break;
-                            }
+    <!-- Resumen de Solicitudes -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="card-title">Solicitudes Asignadas</div>
+                    <div class="display-6"><?php echo $total_solicitudes; ?></div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#modalSolicitudes">Ver todas</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="card-title">Solicitudes Resueltas</div>
+                    <?php
+                    $resueltas = 0;
+                    foreach($solicitudes_por_estado as $estado) {
+                        if ($estado['nombre'] == 'Resuelta') {
+                            $resueltas = $estado['total'];
+                            break;
                         }
-                        ?>
-                        <div class="h5 mb-0 fw-normal text-gray-800"><?php echo $resueltas; ?></div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
-                    </div>
+                    }
+                    ?>
+                    <div class="display-6"><?php echo $resueltas; ?></div>
                 </div>
-                <div class="progress progress-sm mt-2">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                <div class="card-footer">
+                    <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#modalSolicitudesResueltas">Ver detalles</button>
                 </div>
-            </div>
-            <div class="card-footer bg-transparent border-0">
-                <a href="index.php?page=funcionario_solicitudes?estado=resuelta" class="text-success">Ver detalles <i class="fas fa-arrow-circle-right"></i></a>
             </div>
         </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-info shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-normal text-info text-uppercase mb-1">
-                            Tiempo Promedio Resolución</div>
-                        <div class="h5 mb-0 fw-normal text-gray-800">
-                            <?php echo $tiempo_promedio; ?> días
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-clock fa-2x text-gray-300"></i>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="card-title">Tiempo Promedio Resolución</div>
+                    <div class="display-6">
+                        <?php echo $tiempo_promedio; ?> días
                     </div>
                 </div>
-                <div class="progress progress-sm mt-2">
-                    <div class="progress-bar bg-info" role="progressbar" style="width: 100%"></div>
+                <div class="card-footer">
+                    <span>Promedio de tiempo de resolución</span>
                 </div>
-            </div>
-            <div class="card-footer bg-transparent border-0">
-                <span class="text-info small">Promedio de tiempo de resolución</span>
             </div>
         </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-warning shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-normal text-warning text-uppercase mb-1">
-                            Sugerencias Pendientes</div>
-                        <div class="h5 mb-0 fw-normal text-gray-800"><?php echo $sugerencias_pendientes; ?></div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-lightbulb fa-2x text-gray-300"></i>
-                    </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="card-title">Sugerencias Pendientes</div>
+                    <div class="display-6"><?php echo $sugerencias_pendientes; ?></div>
                 </div>
-                <div class="progress progress-sm mt-2">
-                    <div class="progress-bar bg-warning" role="progressbar" style="width: 100%"></div>
-                </div>
-            </div>
-            <div class="card-footer bg-transparent border-0">
-                <a href="index.php?page=funcionario_sugerencias" class="text-warning">Revisar <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Gráficos y Estadísticas -->
-<div class="row">
-    <!-- Gráfico de Rendimiento Mensual -->
-    <div class="col-lg-8 mb-4">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 fw-normal text-primary">
-                    <i class="fas fa-chart-line me-1"></i> Rendimiento Mensual
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="chart-area">
-                    <canvas id="rendimientoChart"></canvas>
+                <div class="card-footer">
+                    <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#modalSugerencias">Revisar</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Gráfico de Distribución por Categoría -->
-    <div class="col-lg-4 mb-4">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 fw-normal text-primary">
-                    <i class="fas fa-chart-pie me-1"></i> Solicitudes por Categoría
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="chart-pie pt-4 pb-2">
-                    <canvas id="categoriasChart"></canvas>
+    <!-- Solicitudes Pendientes y Sugerencias Pendientes -->
+    <div class="row">
+        <!-- Solicitudes Pendientes -->
+        <div class="col-lg-7 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Solicitudes Pendientes</h6>
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalSolicitudes">Ver todas</button>
                 </div>
-                <div class="mt-4 text-center small">
-                    <?php foreach($categorias_data as $cat): ?>
-                        <span class="me-2">
-                            <i class="fas fa-circle" style="color: <?php echo $cat['color']; ?>"></i> <?php echo $cat['nombre']; ?>
-                        </span>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Solicitudes Pendientes y Sugerencias Pendientes -->
-<div class="row">
-    <!-- Solicitudes Pendientes -->
-    <div class="col-lg-8 mb-4">
-        <div class="card shadow">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 fw-normal text-primary">
-                    <i class="fas fa-clipboard-list me-1"></i> Solicitudes Pendientes
-                </h6>
-                <a href="index.php?page=funcionario_solicitudes" class="btn btn-sm btn-primary">
-                    Ver todas
-                </a>
-            </div>
-            <div class="card-body">
-                <?php if (count($solicitudes_recientes) > 0): ?>
-                    <div class="table-responsive">
-                        <table class="table table-hover table-sm mb-0 datatable">
-                            <thead>
+                <div class="card-body">
+                    <?php if (count($solicitudes_recientes) > 0): ?>
+                        <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle">
+                            <thead class="table-light">
                                 <tr>
                                     <th>ID</th>
                                     <th>Título</th>
@@ -357,117 +247,299 @@ $top_categorias = $stmt_top_categorias->fetchAll(PDO::FETCH_ASSOC);
                                     <td><?php echo $solicitud['id']; ?></td>
                                     <td><?php echo Security::escapeOutput($solicitud['titulo']); ?></td>
                                     <td>
-                                        <span class="badge rounded-pill" style="background-color: <?php echo $solicitud['categoria_color']; ?>">
+                                        <span class="badge" style="background:<?php echo htmlspecialchars($solicitud['categoria_color']); ?>">
                                             <?php echo $solicitud['categoria']; ?>
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="badge rounded-pill" style="background-color: <?php echo $solicitud['estado_color']; ?>">
+                                        <span class="badge" style="background:<?php echo htmlspecialchars($solicitud['estado_color']); ?>">
                                             <?php echo $solicitud['estado']; ?>
                                         </span>
                                     </td>
                                     <td><?php echo Security::escapeOutput($solicitud['nombre_ciudadano'] . ' ' . $solicitud['apellidos_ciudadano']); ?></td>
                                     <td><?php echo date('d/m/Y', strtotime($solicitud['fecha_creacion'])); ?></td>
                                     <td>
-                                        <a href="index.php?page=funcionario_ver_solicitud&id=<?php echo $solicitud['id']; ?>" class="btn btn-sm btn-info">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#actualizarEstadoModal" 
+                                        <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#modalVerSolicitud"
+                                            data-id="<?php echo $solicitud['id']; ?>"
+                                            data-titulo="<?php echo htmlspecialchars($solicitud['titulo'], ENT_QUOTES); ?>">
+                                            Ver
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#actualizarEstadoModal" 
                                                 data-id="<?php echo $solicitud['id']; ?>"
                                                 data-titulo="<?php echo htmlspecialchars($solicitud['titulo'], ENT_QUOTES); ?>">
-                                            <i class="fas fa-edit"></i>
+                                            Editar
                                         </button>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
-                    </div>
-                <?php else: ?>
-                    <div class="alert alert-info mb-0">
-                        <i class="fas fa-info-circle me-1"></i> No tienes solicitudes pendientes asignadas.
-                    </div>
-                <?php endif; ?>
+                        </div>
+                    <?php else: ?>
+                        <div class="alert alert-info mb-0">
+                            No tienes solicitudes pendientes asignadas.
+                        </div>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Sugerencias Pendientes y Categorías más Lentas -->
-    <div class="col-lg-4 mb-4">
-        <!-- Sugerencias Pendientes -->
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 fw-normal text-primary">
-                    <i class="fas fa-lightbulb me-1"></i> Sugerencias Pendientes
-                </h6>
-                <a href="index.php?page=funcionario_sugerencias" class="btn btn-sm btn-primary">
-                    Ver todas
-                </a>
-            </div>
-            <div class="card-body">
-                <?php if (count($sugerencias_pendientes_list) > 0): ?>
-                    <div class="list-group list-group-flush">
+        <!-- Sugerencias Pendientes y Categorías más Lentas -->
+        <div class="col-lg-5">
+            <!-- Sugerencias Pendientes -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Sugerencias Pendientes</h6>
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalSugerencias">Ver todas</button>
+                </div>
+                <div class="card-body">
+                    <?php if (count($sugerencias_pendientes_list) > 0): ?>
                         <?php foreach($sugerencias_pendientes_list as $sugerencia): ?>
-                        <a href="index.php?page=funcionario_ver_sugerencia&id=<?php echo $sugerencia['id']; ?>" class="list-group-item list-group-item-action">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1"><?php echo Security::escapeOutput($sugerencia['titulo']); ?></h6>
-                                <span class="badge rounded-pill" style="background-color: <?php echo $sugerencia['estado_color']; ?>">
+                        <div class="mb-2 border-bottom pb-2">
+                            <div class="d-flex justify-content-between">
+                                <span class="fw-bold"><?php echo Security::escapeOutput($sugerencia['titulo']); ?></span>
+                                <span class="badge" style="background:<?php echo htmlspecialchars($sugerencia['estado_color']); ?>">
                                     <?php echo $sugerencia['estado']; ?>
                                 </span>
                             </div>
-                            <div class="d-flex w-100 justify-content-between">
-                                <small class="text-muted">
-                                    <i class="fas fa-user me-1"></i> <?php echo Security::escapeOutput($sugerencia['nombre_ciudadano'] . ' ' . $sugerencia['apellidos_ciudadano']); ?>
-                                </small>
-                                <small class="text-muted"><?php echo date('d/m/Y', strtotime($sugerencia['fecha_creacion'])); ?></small>
+                            <div class="text-muted small">
+                                <?php echo Security::escapeOutput($sugerencia['nombre_ciudadano'] . ' ' . $sugerencia['apellidos_ciudadano']); ?>
+                                &middot; <?php echo date('d/m/Y', strtotime($sugerencia['fecha_creacion'])); ?>
                             </div>
-                        </a>
-                        <?php endforeach; ?>
-                    </div>
-                <?php else: ?>
-                    <div class="alert alert-info mb-0">
-                        <i class="fas fa-info-circle me-1"></i> No hay sugerencias pendientes de revisión.
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
-        
-        <!-- Categorías con más tiempo de resolución -->
-        <div class="card shadow">
-            <div class="card-header py-3">
-                <h6 class="m-0 fw-normal text-primary">
-                    <i class="fas fa-hourglass-half me-1"></i> Categorías Más Lentas
-                </h6>
-            </div>
-            <div class="card-body">
-                <?php if (count($top_categorias) > 0): ?>
-                    <div class="list-group list-group-flush">
-                        <?php foreach($top_categorias as $index => $cat): ?>
-                        <div class="list-group-item">
-                            <div class="d-flex w-100 justify-content-between align-items-center">
-                                <h6 class="mb-1">
-                                    <span class="badge rounded-pill me-2" style="background-color: <?php echo $cat['color']; ?>">
-                                        <?php echo ($index + 1); ?>
-                                    </span>
-                                    <?php echo $cat['nombre']; ?>
-                                </h6>
-                                <span class="text-muted small"><?php echo round($cat['tiempo_promedio'], 1); ?> días</span>
-                            </div>
-                            <div class="progress mt-2" style="height: 5px;">
-                                <div class="progress-bar" role="progressbar" style="width: <?php echo min(100, round($cat['tiempo_promedio'] * 10)); ?>%; background-color: <?php echo $cat['color']; ?>"></div>
-                            </div>
-                            <small class="text-muted"><?php echo $cat['total']; ?> solicitudes</small>
                         </div>
                         <?php endforeach; ?>
-                    </div>
-                <?php else: ?>
-                    <div class="alert alert-info mb-0">
-                        <i class="fas fa-info-circle me-1"></i> No hay datos suficientes para este análisis.
-                    </div>
-                <?php endif; ?>
+                    <?php else: ?>
+                        <div class="alert alert-info mb-0">
+                            No hay sugerencias pendientes de revisión.
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+            
+            <!-- Categorías con más tiempo de resolución -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Categorías Más Lentas</h6>
+                </div>
+                <div class="card-body">
+                    <?php if (count($top_categorias) > 0): ?>
+                        <?php foreach($top_categorias as $index => $cat): ?>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <span class="badge bg-secondary me-2"><?php echo ($index + 1); ?></span>
+                                <span class="fw-bold"><?php echo $cat['nombre']; ?></span>
+                                <span class="badge ms-2" style="background:<?php echo htmlspecialchars($cat['color']); ?>">&nbsp;</span>
+                            </div>
+                            <div>
+                                <span class="me-2"><?php echo round($cat['tiempo_promedio'], 1); ?> días</span>
+                                <span class="text-muted small"><?php echo $cat['total']; ?> solicitudes</span>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="alert alert-info mb-0">
+                            No hay datos suficientes para este análisis.
+                        </div>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
     </div>
+</div>
+
+<!-- Modal: Gestionar Solicitudes -->
+<div class="modal fade" id="modalSolicitudes" tabindex="-1" aria-labelledby="modalSolicitudesLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalSolicitudesLabel">Solicitudes Asignadas</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <?php if (count($solicitudes_recientes) > 0): ?>
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Categoría</th>
+                <th>Estado</th>
+                <th>Ciudadano</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach($solicitudes_recientes as $solicitud): ?>
+              <tr>
+                <td><?php echo $solicitud['id']; ?></td>
+                <td><?php echo Security::escapeOutput($solicitud['titulo']); ?></td>
+                <td>
+                  <span class="badge" style="background:<?php echo htmlspecialchars($solicitud['categoria_color']); ?>">
+                    <?php echo $solicitud['categoria']; ?>
+                  </span>
+                </td>
+                <td>
+                  <span class="badge" style="background:<?php echo htmlspecialchars($solicitud['estado_color']); ?>">
+                    <?php echo $solicitud['estado']; ?>
+                  </span>
+                </td>
+                <td><?php echo Security::escapeOutput($solicitud['nombre_ciudadano'] . ' ' . $solicitud['apellidos_ciudadano']); ?></td>
+                <td><?php echo date('d/m/Y', strtotime($solicitud['fecha_creacion'])); ?></td>
+                <td>
+                  <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#modalVerSolicitud"
+                    data-id="<?php echo $solicitud['id']; ?>"
+                    data-titulo="<?php echo htmlspecialchars($solicitud['titulo'], ENT_QUOTES); ?>">
+                    Ver
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#actualizarEstadoModal" 
+                    data-id="<?php echo $solicitud['id']; ?>"
+                    data-titulo="<?php echo htmlspecialchars($solicitud['titulo'], ENT_QUOTES); ?>">
+                    Editar
+                  </button>
+                </td>
+              </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+        <?php else: ?>
+        <div class="alert alert-info mb-0">
+          No tienes solicitudes pendientes asignadas.
+        </div>
+        <?php endif; ?>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Solicitudes Resueltas -->
+<div class="modal fade" id="modalSolicitudesResueltas" tabindex="-1" aria-labelledby="modalSolicitudesResueltasLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalSolicitudesResueltasLabel">Solicitudes Resueltas</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <?php
+        $query_resueltas = "SELECT s.id, s.titulo, s.fecha_creacion, c.nombre as categoria, e.nombre as estado
+                            FROM solicitudes s
+                            JOIN categorias c ON s.categoria_id = c.id
+                            JOIN estados e ON s.estado_id = e.id
+                            WHERE s.funcionario_id = :funcionario_id AND s.estado_id = 4
+                            ORDER BY s.fecha_creacion DESC";
+        $stmt_resueltas = $db->prepare($query_resueltas);
+        $stmt_resueltas->bindParam(':funcionario_id', $funcionario_id);
+        $stmt_resueltas->execute();
+        $solicitudes_resueltas = $stmt_resueltas->fetchAll(PDO::FETCH_ASSOC);
+        ?>
+        <?php if (count($solicitudes_resueltas) > 0): ?>
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Categoría</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach($solicitudes_resueltas as $solicitud): ?>
+              <tr>
+                <td><?php echo $solicitud['id']; ?></td>
+                <td><?php echo Security::escapeOutput($solicitud['titulo']); ?></td>
+                <td><?php echo $solicitud['categoria']; ?></td>
+                <td><?php echo $solicitud['estado']; ?></td>
+                <td><?php echo date('d/m/Y', strtotime($solicitud['fecha_creacion'])); ?></td>
+              </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+        <?php else: ?>
+        <div class="alert alert-info mb-0">
+          No hay solicitudes resueltas.
+        </div>
+        <?php endif; ?>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Sugerencias Pendientes -->
+<div class="modal fade" id="modalSugerencias" tabindex="-1" aria-labelledby="modalSugerenciasLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalSugerenciasLabel">Sugerencias Pendientes</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <?php if (count($sugerencias_pendientes_list) > 0): ?>
+        <div class="list-group">
+          <?php foreach($sugerencias_pendientes_list as $sugerencia): ?>
+          <div class="list-group-item">
+            <div class="d-flex justify-content-between">
+              <span class="fw-bold"><?php echo Security::escapeOutput($sugerencia['titulo']); ?></span>
+              <span class="badge" style="background:<?php echo htmlspecialchars($sugerencia['estado_color']); ?>">
+                <?php echo $sugerencia['estado']; ?>
+              </span>
+            </div>
+            <div class="text-muted small">
+              <?php echo Security::escapeOutput($sugerencia['nombre_ciudadano'] . ' ' . $sugerencia['apellidos_ciudadano']); ?>
+              &middot; <?php echo date('d/m/Y', strtotime($sugerencia['fecha_creacion'])); ?>
+            </div>
+          </div>
+          <?php endforeach; ?>
+        </div>
+        <?php else: ?>
+        <div class="alert alert-info mb-0">
+          No hay sugerencias pendientes de revisión.
+        </div>
+        <?php endif; ?>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Reportes -->
+<div class="modal fade" id="modalReportes" tabindex="-1" aria-labelledby="modalReportesLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalReportesLabel">Reportes</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Aquí puedes agregar contenido de reportes, gráficos, etc. -->
+        <div class="alert alert-info mb-0">
+          Próximamente reportes detallados.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Ver Solicitud (solo ejemplo, puedes personalizar) -->
+<div class="modal fade" id="modalVerSolicitud" tabindex="-1" aria-labelledby="modalVerSolicitudLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalVerSolicitudLabel">Detalle de Solicitud</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div id="detalleSolicitudContent">
+          <!-- El contenido se puede cargar dinámicamente con JS si lo deseas -->
+          <div class="alert alert-info">Selecciona una solicitud para ver el detalle.</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Modal para actualizar estado de solicitud -->
@@ -476,7 +548,7 @@ $top_categorias = $stmt_top_categorias->fetchAll(PDO::FETCH_ASSOC);
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="actualizarEstadoModalLabel">Actualizar Estado de Solicitud</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
                 <form id="actualizarEstadoForm" action="index.php?page=funcionario_actualizar_estado" method="POST">
@@ -485,12 +557,12 @@ $top_categorias = $stmt_top_categorias->fetchAll(PDO::FETCH_ASSOC);
                     
                     <div class="mb-3">
                         <label for="titulo_solicitud" class="form-label">Solicitud</label>
-                        <input type="text" class="form-control" id="titulo_solicitud" readonly>
+                        <input type="text" id="titulo_solicitud" class="form-control" readonly>
                     </div>
                     
                     <div class="mb-3">
                         <label for="estado_id" class="form-label">Estado</label>
-                        <select class="form-select" id="estado_id" name="estado_id" required>
+                        <select id="estado_id" name="estado_id" class="form-select" required>
                             <?php 
                             $estados_disponibles->execute();
                             while ($estado = $estados_disponibles->fetch(PDO::FETCH_ASSOC)):
@@ -502,7 +574,7 @@ $top_categorias = $stmt_top_categorias->fetchAll(PDO::FETCH_ASSOC);
                     
                     <div class="mb-3">
                         <label for="comentario" class="form-label">Comentario</label>
-                        <textarea class="form-control" id="comentario" name="comentario" rows="3" placeholder="Añade un comentario sobre la actualización..."></textarea>
+                        <textarea id="comentario" name="comentario" class="form-control" rows="3" placeholder="Añade un comentario sobre la actualización..."></textarea>
                     </div>
                 </form>
             </div>
@@ -514,149 +586,32 @@ $top_categorias = $stmt_top_categorias->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Scripts para gráficos -->
+<!-- Bootstrap JS Bundle (with Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<!-- Incluir JS del dashboard -->
+<script src="../funcionario/assets/js/app_dashboard.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Gráfico de rendimiento mensual
-    const rendimientoCtx = document.getElementById('rendimientoChart').getContext('2d');
-    const rendimientoChart = new Chart(rendimientoCtx, {
-        type: 'line',
-        data: {
-            labels: [
-                <?php 
-                foreach($rendimiento_data as $data) {
-                    $fecha = date('M Y', strtotime($data['mes'] . '-01'));
-                    echo "'" . $fecha . "',";
-                }
-                ?>
-            ],
-            datasets: [
-                {
-                    label: 'Solicitudes Resueltas',
-                    data: [
-                        <?php 
-                        foreach($rendimiento_data as $data) {
-                            echo $data['resueltas'] . ",";
-                        }
-                        ?>
-                    ],
-                    backgroundColor: 'rgba(46, 204, 113, 0.2)',
-                    borderColor: 'rgba(46, 204, 113, 1)',
-                    borderWidth: 2,
-                    fill: false,
-                    tension: 0.4
-                },
-                {
-                    label: 'Tiempo Promedio (días)',
-                    data: [
-                        <?php 
-                        foreach($rendimiento_data as $data) {
-                            echo round($data['tiempo_promedio'], 1) . ",";
-                        }
-                        ?>
-                    ],
-                    backgroundColor: 'rgba(52, 152, 219, 0.2)',
-                    borderColor: 'rgba(52, 152, 219, 1)',
-                    borderWidth: 2,
-                    fill: false,
-                    tension: 0.4,
-                    yAxisID: 'y1'
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Solicitudes Resueltas'
-                    },
-                    grid: {
-                        drawBorder: false,
-                        color: 'rgba(0, 0, 0, 0.1)'
-                    },
-                    ticks: {
-                        precision: 0
-                    }
-                },
-                y1: {
-                    beginAtZero: true,
-                    position: 'right',
-                    title: {
-                        display: true,
-                        text: 'Tiempo Promedio (días)'
-                    },
-                    grid: {
-                        display: false,
-                        drawBorder: false
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false,
-                        drawBorder: false
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
-        }
+    // Modal para Editar Estado
+    var actualizarEstadoModal = document.getElementById('actualizarEstadoModal');
+    actualizarEstadoModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        var solicitudId = button.getAttribute('data-id');
+        var titulo = button.getAttribute('data-titulo');
+        document.getElementById('solicitud_id').value = solicitudId;
+        document.getElementById('titulo_solicitud').value = titulo;
     });
 
-    // Gráfico de solicitudes por categoría
-    const categoriasCtx = document.getElementById('categoriasChart').getContext('2d');
-    const categoriasChart = new Chart(categoriasCtx, {
-        type: 'doughnut',
-        data: {
-            labels: [
-                <?php foreach($categorias_data as $cat): ?>
-                '<?php echo $cat['nombre']; ?>',
-                <?php endforeach; ?>
-            ],
-            datasets: [{
-                data: [
-                    <?php foreach($categorias_data as $cat): ?>
-                    <?php echo $cat['total']; ?>,
-                    <?php endforeach; ?>
-                ],
-                backgroundColor: [
-                    <?php foreach($categorias_data as $cat): ?>
-                    '<?php echo $cat['color']; ?>',
-                    <?php endforeach; ?>
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    display: false
-                }
-            },
-            cutout: '70%'
-        }
+    // Modal para Ver Solicitud (puedes cargar detalles por AJAX si lo deseas)
+    var modalVerSolicitud = document.getElementById('modalVerSolicitud');
+    modalVerSolicitud.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        var solicitudId = button.getAttribute('data-id');
+        var titulo = button.getAttribute('data-titulo');
+        var content = document.getElementById('detalleSolicitudContent');
+        content.innerHTML = '<div class="mb-2"><strong>ID:</strong> ' + solicitudId + '</div>' +
+                            '<div class="mb-2"><strong>Título:</strong> ' + titulo + '</div>' +
+                            '<div class="alert alert-info">Puedes cargar más detalles por AJAX aquí.</div>';
     });
-
-    // Inicializar modal de actualización de estado
-    const actualizarEstadoModal = document.getElementById('actualizarEstadoModal');
-    if (actualizarEstadoModal) {
-        actualizarEstadoModal.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
-            const id = button.getAttribute('data-id');
-            const titulo = button.getAttribute('data-titulo');
-            
-            document.getElementById('solicitud_id').value = id;
-            document.getElementById('titulo_solicitud').value = titulo;
-        });
-    }
 });
 </script>

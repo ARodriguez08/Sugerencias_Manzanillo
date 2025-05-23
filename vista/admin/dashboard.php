@@ -2,7 +2,7 @@
 // Incluir el security.php
 include_once 'config/security.php';
 
-// Inicializar variables
+// Inicializar variable|s
 $csrf_token = Security::generateCSRFToken();
 
 // Incluir modelos necesarios
@@ -23,7 +23,19 @@ $estadisticas_categoria = $datosDashboard['estadisticas_categoria'];
 $database = new Database();
 $db = $database->getConnection();
 
-// Incluir el archivo que contiene la clase Sugerencia
+// Incluir los archivos que contienen las clases necesarias
+if (!class_exists('Solicitud')) {
+    include_once 'modelo/Solicitud.php';
+}
+if (!class_exists('Usuario')) {
+    include_once 'modelo/Usuario.php';
+}
+if (!class_exists('Categoria')) {
+    include_once 'modelo/Categoria.php';
+}
+if (!class_exists('Estado')) {
+    include_once 'modelo/Estado.php';
+}
 if (!class_exists('Sugerencia')) {
     include_once 'modelo/Sugerencia.php';
 }
@@ -83,7 +95,12 @@ $query_tiempo_categoria = "SELECT c.nombre, c.color, AVG(DATEDIFF(s.fecha_resolu
 $stmt_tiempo_categoria = $db->prepare($query_tiempo_categoria);
 $stmt_tiempo_categoria->execute();
 $tiempo_categoria = $stmt_tiempo_categoria->fetchAll(PDO::FETCH_ASSOC);
-
+if (!isset($sugerenciaControlador) || !is_object($sugerenciaControlador)) {
+    if (!class_exists('SugerenciaControlador')) {
+        include_once 'controlador/SugerenciaController.php';
+    }
+    $sugerenciaControlador = new Sugerencia($db);
+}
 // 10. Top funcionarios por solicitudes resueltas
 $query_top_funcionarios = "SELECT 
                           u.id, u.nombre, u.apellidos, 
@@ -1036,3 +1053,4 @@ document.addEventListener('DOMContentLoaded', function() {
     font-size: 1rem;
 }
 </style>
+|

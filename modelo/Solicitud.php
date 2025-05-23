@@ -1,309 +1,245 @@
 <?php
-class Solicitud {
-    private $conn;
-    private $table_name = "solicitudes";
+class Solicitud
+{
+    private $pdo;
 
-    public $id;
-    public $titulo;
-    public $descripcion;
-    public $categoria_id;
-    public $estado_id;
-    public $usuario_id;
-    public $funcionario_id;
-    public $latitud;
-    public $longitud;
-    public $direccion;
-    public $fecha_creacion;
-    public $fecha_actualizacion;
-    public $fecha_resolucion;
-    public $prioridad;
+    public function __construct()
+    {
+        $host = 'localhost';
+        $db   = 'sugerencias_manzanillo';
+        $user = 'root';
+        $pass = '';
+        $charset = 'utf8mb4';
 
-    public function __construct($db) {
-        $this->conn = $db;
+        $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+        $options = [
+            \PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION,
+            \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+            \PDO::ATTR_EMULATE_PREPARES   => false,
+        ];
+
+        try {
+            $this->pdo = new \PDO($dsn, $user, $pass, $options);
+        } catch (\PDOException $e) {
+            throw new \PDOException($e->getMessage(), (int)$e->getCode());
+        }
     }
 
     // Obtener todas las solicitudes
-    public function obtenerTodas($page = 1, $items_per_page = 10) {
-        $offset = ($page - 1) * $items_per_page;
-        
-        $query = "SELECT s.*, c.nombre as categoria_nombre, c.color as categoria_color, 
-                         e.nombre as estado_nombre, e.color as estado_color,
-                         u.nombre as usuario_nombre, u.apellidos as usuario_apellidos,
-                         f.nombre as funcionario_nombre, f.apellidos as funcionario_apellidos
-                  FROM " . $this->table_name . " s
-                  LEFT JOIN categorias c ON s.categoria_id = c.id
-                  LEFT JOIN estados e ON s.estado_id = e.id
-                  LEFT JOIN usuarios u ON s.usuario_id = u.id
-                  LEFT JOIN usuarios f ON s.funcionario_id = f.id
-                  ORDER BY s.fecha_creacion DESC
-                  LIMIT :offset, :items_per_page";
-
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-        $stmt->bindParam(':items_per_page', $items_per_page, PDO::PARAM_INT);
-        $stmt->execute();
-
-        return $stmt;
+    public function obtenerSolicitudes()
+    {
+        $stmt = $this->pdo->query("SELECT s.*, c.nombre AS categoria, e.nombre AS estado, u.nombre AS usuario
+            FROM solicitudes s
+            JOIN categorias c ON s.categoria_id = c.id
+            JOIN estados e ON s.estado_id = e.id
+            JOIN usuarios u ON s.usuario_id = u.id
+            ORDER BY s.fecha_creacion DESC");
+        return $stmt->fetchAll();
     }
 
-    // Contar total de solicitudes
-    public function contarTotal() {
-        $query = "SELECT COUNT(*) as total FROM " . $this->table_name;
-        
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        return $row['total'];
+    // Recibir y guardar una nueva solicitud
+    public function recibirSolicitud($datos)
+    {
+        if (
+            empty($datos['titulo']) ||
+            empty($datos['descripcion']) ||
+            empty($datos['categoria_id']) ||
+            empty($datos['usuario_id'])
+        ) {
+            return ['exito' => false, 'mensaje' => 'Título, descripción, categoría y usuario son obligatorios.'];
+        }
+
+        $estado_id = 1;
+        $prioridad = isset($datos['prioridad']) ? $datos['prioridad'] : 'Media';
+
+        $sql = "INSERT INTO solicitudes (titulo, descripcion, categoria_id, estado_id, usuario_id, latitud, longitud, direccion, prioridad)
+                VALUES (:titulo, :descripcion, :categoria_id, :estado_id, :usuario_id, :latitud, :longitud, :direccion, :prioridad)";
+        $stmt = $this->pdo->prepare($sql);
+
+        $stmt->bindValue(':titulo', $datos['titulo']);
+        $stmt->bindValue(':descripcion', $datos['descripcion']);
+        $stmt->bindValue(':categoria_id', $datos['categoria_id']);
+        $stmt->bindValue(':estado_id', $estado_id);
+        $stmt->bindValue(':usuario_id', $datos['usuario_id']);
+        $stmt->bindValue(':latitud', isset($datos['latitud']) ? $datos['latitud'] : null);
+        $stmt->bindValue(':longitud', isset($datos['longitud']) ? $datos['longitud'] : null);
+        $stmt->bindValue(':direccion', isset($datos['direccion']) ? $datos['direccion'] : null);
+        $stmt->bindValue(':prioridad', $prioridad);
+
+        try {
+            $stmt->execute();
+            return ['exito' => true, 'mensaje' => 'Solicitud recibida correctamente.'];
+        } catch (\PDOException $e) {
+            return ['exito' => false, 'mensaje' => 'Error al guardar la solicitud: ' . $e->getMessage()];
+        }
     }
 
-    // Obtener estadísticas por categoría
-    public function estadisticasPorCategoria() {
-        $query = "SELECT c.nombre, c.color, COUNT(s.id) as total
-                  FROM " . $this->table_name . " s
-                  LEFT JOIN categorias c ON s.categoria_id = c.id
-                  GROUP BY s.categoria_id
-                  ORDER BY total DESC";
-        
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        
-        return $stmt;
-    }
+public function contarTotal() {
+    $query = "SELECT COUNT(*) as total FROM solicitudes";
+    $stmt = $this->pdo->prepare($query);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $row ? $row['total'] : 0;
+}
 
-    // Obtener estadísticas por estado
-    public function estadisticasPorEstado() {
-        $query = "SELECT e.nombre, e.color, COUNT(s.id) as total
-                  FROM " . $this->table_name . " s
-                  LEFT JOIN estados e ON s.estado_id = e.id
-                  GROUP BY s.estado_id
-                  ORDER BY total DESC";
-        
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        
-        return $stmt;
-    }
+public function estadisticasPorCategoria() {
+    $query = "SELECT categoria_id, COUNT(*) as total FROM solicitudes GROUP BY categoria_id";
+    $stmt = $this->pdo->prepare($query);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
-    // Obtener solicitudes recientes
-    public function obtenerRecientes($limit = 5) {
-        $query = "SELECT s.*, c.nombre as categoria_nombre, c.color as categoria_color, 
-                         e.nombre as estado_nombre, e.color as estado_color
-                  FROM " . $this->table_name . " s
-                  LEFT JOIN categorias c ON s.categoria_id = c.id
-                  LEFT JOIN estados e ON s.estado_id = e.id
-                  ORDER BY s.fecha_creacion DESC
-                  LIMIT :limit";
+public function estadisticasPorEstado() {
+    $query = "SELECT estado_id, COUNT(*) as total FROM solicitudes GROUP BY estado_id";
+    $stmt = $this->pdo->prepare($query);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-        $stmt->execute();
-
-        return $stmt;
-    }
-
-    // Métodos agregados
-    public function obtenerPorUsuario($usuario_id) {
-        $query = "SELECT s.*, c.nombre as categoria_nombre, c.color as categoria_color, 
-                         e.nombre as estado_nombre, e.color as estado_color
-                  FROM " . $this->table_name . " s
-                  LEFT JOIN categorias c ON s.categoria_id = c.id
-                  LEFT JOIN estados e ON s.estado_id = e.id
-                  WHERE s.usuario_id = :usuario_id
-                  ORDER BY s.fecha_creacion DESC";
-
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':usuario_id', $usuario_id);
-        $stmt->execute();
-
-        return $stmt;
-    }
+public function obtenerRecientes($limit = 5) {
+    $query = "SELECT * FROM solicitudes ORDER BY fecha_creacion DESC LIMIT ?";
+    $stmt = $this->pdo->prepare($query);
+    $stmt->bindValue(1, (int)$limit, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
     public function obtenerPorEstado($estado_id) {
-        $query = "SELECT s.*, c.nombre as categoria_nombre, c.color as categoria_color,
-                         u.nombre as usuario_nombre, u.apellidos as usuario_apellidos
-                  FROM " . $this->table_name . " s
-                  LEFT JOIN categorias c ON s.categoria_id = c.id
-                  LEFT JOIN usuarios u ON s.usuario_id = u.id
-                  WHERE s.estado_id = :estado_id
-                  ORDER BY s.fecha_creacion DESC";
-
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':estado_id', $estado_id);
+        $query = "SELECT * FROM solicitudes WHERE estado_id = ?";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(1, $estado_id, PDO::PARAM_INT);
         $stmt->execute();
-
-        return $stmt;
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function obtenerPorCategoria($categoria_id) {
-        $query = "SELECT s.*, e.nombre as estado_nombre, e.color as estado_color,
-                         u.nombre as usuario_nombre, u.apellidos as usuario_apellidos
-                  FROM " . $this->table_name . " s
-                  LEFT JOIN estados e ON s.estado_id = e.id
-                  LEFT JOIN usuarios u ON s.usuario_id = u.id
-                  WHERE s.categoria_id = :categoria_id
-                  ORDER BY s.fecha_creacion DESC";
-
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':categoria_id', $categoria_id);
+        $query = "SELECT * FROM solicitudes WHERE categoria_id = ?";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(1, $categoria_id, PDO::PARAM_INT);
         $stmt->execute();
-
-        return $stmt;
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function obtenerRecientesPorUsuario($usuario_id, $limit = 5) {
-        $query = "SELECT s.*, c.nombre as categoria_nombre, c.color as categoria_color, 
-                         e.nombre as estado_nombre, e.color as estado_color
-                  FROM " . $this->table_name . " s
-                  LEFT JOIN categorias c ON s.categoria_id = c.id
-                  LEFT JOIN estados e ON s.estado_id = e.id
-                  WHERE s.usuario_id = :usuario_id
-                  ORDER BY s.fecha_creacion DESC
-                  LIMIT :limit";
-
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':usuario_id', $usuario_id);
-        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $query = "SELECT * FROM solicitudes WHERE usuario_id = ? ORDER BY fecha_creacion DESC LIMIT ?";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(1, $usuario_id, PDO::PARAM_INT);
+        $stmt->bindValue(2, (int)$limit, PDO::PARAM_INT);
         $stmt->execute();
-
-        return $stmt;
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function contarPorUsuario($usuario_id) {
-        $query = "SELECT COUNT(*) as total FROM " . $this->table_name . " WHERE usuario_id = :usuario_id";
-        
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':usuario_id', $usuario_id);
+        $query = "SELECT COUNT(*) as total FROM solicitudes WHERE usuario_id = ?";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(1, $usuario_id, PDO::PARAM_INT);
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        return $row['total'];
+        return $row ? $row['total'] : 0;
     }
 
     public function estadisticasPorEstadoUsuario($usuario_id) {
-        $query = "SELECT e.nombre, e.color, COUNT(s.id) as total
-                  FROM " . $this->table_name . " s
-                  LEFT JOIN estados e ON s.estado_id = e.id
-                  WHERE s.usuario_id = :usuario_id
-                  GROUP BY s.estado_id
-                  ORDER BY total DESC";
-        
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':usuario_id', $usuario_id);
+        $query = "SELECT estado_id, COUNT(*) as total FROM solicitudes WHERE usuario_id = ? GROUP BY estado_id";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(1, $usuario_id, PDO::PARAM_INT);
         $stmt->execute();
-        
-        return $stmt;
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function estadisticasPorCategoriaUsuario($usuario_id) {
-        $query = "SELECT c.nombre, c.color, COUNT(s.id) as total
-                  FROM " . $this->table_name . " s
-                  LEFT JOIN categorias c ON s.categoria_id = c.id
-                  WHERE s.usuario_id = :usuario_id
-                  GROUP BY s.categoria_id
-                  ORDER BY total DESC";
-        
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':usuario_id', $usuario_id);
+        $query = "SELECT categoria_id, COUNT(*) as total FROM solicitudes WHERE usuario_id = ? GROUP BY categoria_id";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(1, $usuario_id, PDO::PARAM_INT);
         $stmt->execute();
-        
-        return $stmt;
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function contarPorFuncionario($funcionario_id) {
-        $query = "SELECT COUNT(*) as total FROM " . $this->table_name . " WHERE funcionario_id = ?";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute([$funcionario_id]);
+        $query = "SELECT COUNT(*) as total FROM solicitudes WHERE funcionario_id = ?";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(1, $funcionario_id, PDO::PARAM_INT);
+        $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $row['total'];
+        return $row ? $row['total'] : 0;
     }
-    
+
     public function estadisticasPorEstadoFuncionario($funcionario_id) {
-        $query = "SELECT e.nombre, e.color, COUNT(s.id) as total 
-                  FROM " . $this->table_name . " s
-                  JOIN estados e ON s.estado_id = e.id
-                  WHERE s.funcionario_id = ?
-                  GROUP BY s.estado_id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute([$funcionario_id]);
-        return $stmt;
+        $query = "SELECT estado_id, COUNT(*) as total FROM solicitudes WHERE funcionario_id = ? GROUP BY estado_id";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(1, $funcionario_id, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    
+
+    public function obtenerPorFuncionario($funcionario_id, $limit = null) {
+        $query = "SELECT * FROM solicitudes WHERE funcionario_id = ? ORDER BY fecha_creacion DESC";
+        if ($limit !== null) {
+            $query .= " LIMIT ?";
+        }
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(1, $funcionario_id, PDO::PARAM_INT);
+        if ($limit !== null) {
+            $stmt->bindValue(2, (int)$limit, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function rendimientoMensualFuncionario($funcionario_id) {
-        $query = "SELECT DATE_FORMAT(fecha_resolucion, '%Y-%m') as mes, 
-                  COUNT(*) as resueltas,
-                  AVG(DATEDIFF(fecha_resolucion, fecha_creacion)) as tiempo_promedio
-                  FROM " . $this->table_name . "
-                  WHERE funcionario_id = ? AND fecha_resolucion IS NOT NULL
-                  GROUP BY DATE_FORMAT(fecha_resolucion, '%Y-%m')
-                  ORDER BY mes ASC
-                  LIMIT 6";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute([$funcionario_id]);
-        return $stmt;
+        $query = "SELECT MONTH(fecha_creacion) as mes, COUNT(*) as total FROM solicitudes WHERE funcionario_id = ? GROUP BY mes";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(1, $funcionario_id, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    
+
     public function topCategoriasLentasFuncionario($funcionario_id) {
-        $query = "SELECT c.nombre, c.color, 
-                  AVG(DATEDIFF(s.fecha_resolucion, s.fecha_creacion)) as tiempo_promedio,
-                  COUNT(s.id) as total
-                  FROM " . $this->table_name . " s
-                  JOIN categorias c ON s.categoria_id = c.id
-                  WHERE s.funcionario_id = ? AND s.fecha_resolucion IS NOT NULL
-                  GROUP BY s.categoria_id
-                  ORDER BY tiempo_promedio DESC
-                  LIMIT 3";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute([$funcionario_id]);
-        return $stmt;
+        $query = "SELECT categoria_id, AVG(DATEDIFF(fecha_resolucion, fecha_creacion)) as tiempo_promedio FROM solicitudes WHERE funcionario_id = ? AND fecha_resolucion IS NOT NULL GROUP BY categoria_id ORDER BY tiempo_promedio DESC LIMIT 3";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(1, $funcionario_id, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    
+
     public function evolucionSolicitudesUsuario($usuario_id) {
-        $query = "SELECT DATE_FORMAT(fecha_creacion, '%Y-%m') as mes, COUNT(*) as total
-                  FROM " . $this->table_name . "
-                  WHERE usuario_id = ?
-                  GROUP BY DATE_FORMAT(fecha_creacion, '%Y-%m')
-                  ORDER BY mes ASC
-                  LIMIT 6";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute([$usuario_id]);
-        return $stmt;
+        $query = "SELECT MONTH(fecha_creacion) as mes, COUNT(*) as total FROM solicitudes WHERE usuario_id = ? GROUP BY mes";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(1, $usuario_id, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    
+
     public function tiempoPromedioResolucionUsuario($usuario_id) {
-        $query = "SELECT AVG(DATEDIFF(fecha_resolucion, fecha_creacion)) as promedio
-                  FROM " . $this->table_name . "
-                  WHERE usuario_id = ? AND fecha_resolucion IS NOT NULL";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute([$usuario_id]);
+        $query = "SELECT AVG(DATEDIFF(fecha_resolucion, fecha_creacion)) as tiempo_promedio FROM solicitudes WHERE usuario_id = ? AND fecha_resolucion IS NOT NULL";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(1, $usuario_id, PDO::PARAM_INT);
+        $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $row['promedio'] ? round($row['promedio'], 1) : 0;
+        return $row ? $row['tiempo_promedio'] : null;
     }
 
     public function obtenerConFiltros($filtros) {
-        // Example implementation: Adjust the query based on your database structure and filters
         $query = "SELECT * FROM solicitudes WHERE 1=1";
-        
-        foreach ($filtros as $campo => $valor) {
-            $query .= " AND " . $campo . " = :" . $campo;
+        $params = [];
+        if (isset($filtros['usuario_id'])) {
+            $query .= " AND usuario_id = ?";
+            $params[] = $filtros['usuario_id'];
         }
-
-        $stmt = $this->conn->prepare($query);
-
-        foreach ($filtros as $campo => $valor) {
-            $stmt->bindValue(':' . $campo, $valor);
+        if (isset($filtros['estado_id'])) {
+            $query .= " AND estado_id = ?";
+            $params[] = $filtros['estado_id'];
         }
-
+        if (isset($filtros['categoria_id'])) {
+            $query .= " AND categoria_id = ?";
+            $params[] = $filtros['categoria_id'];
+        }
+        $stmt = $this->pdo->prepare($query);
+        foreach ($params as $i => $param) {
+            $stmt->bindValue($i + 1, $param, PDO::PARAM_INT);
+        }
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    public function obtenerPorFuncionario($funcionario_id, $limit = 8) {
-        $query = "SELECT * FROM solicitudes WHERE funcionario_id = :funcionario_id ORDER BY fecha_creacion DESC LIMIT :limit";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':funcionario_id', $funcionario_id, PDO::PARAM_INT);
-        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+
+    
 }
-?>
