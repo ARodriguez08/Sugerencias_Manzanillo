@@ -242,16 +242,16 @@ if (!$categorias_array) {
 
 <!-- Cabecera del Dashboard -->
 <div class="row">
-    <div class="col-md-12">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">
+    <div class="col-12">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-primary">
                 <i class="fas fa-tachometer-alt me-2"></i>Dashboard Administrativo
             </h1>
-            <div>
-                <button type="button" class="btn btn-primary btn-sm" id="refreshDashboard">
+            <div class="d-flex align-items-center">
+                <button type="button" class="btn btn-primary btn-sm me-2" id="refreshDashboard">
                     <i class="fas fa-sync-alt me-1"></i> Actualizar
                 </button>
-                <div class="btn-group ms-2">
+                <div class="btn-group">
                     <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-download me-1"></i> Exportar
                     </button>
@@ -268,789 +268,320 @@ if (!$categorias_array) {
 </div>
 
 <!-- Tarjetas de resumen -->
-<div class="row">
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card shadow h-100">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col-auto pe-3">
-                        <div class="icon-circle bg-primary text-white">
-                            <i class="fas fa-clipboard-list"></i>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="small fw-normal text-primary text-uppercase mb-1">
-                            Total de Solicitudes</div>
-                        <div class="h5 mb-0 fw-normal text-dark"><?php echo $total_solicitudes; ?></div>
-                        <div class="mt-2 mb-0 text-muted small">
-                            <span class="text-success me-2"><i class="fas fa-check-circle"></i> <?php echo $resueltas; ?> resueltas</span>
-                            <span class="text-warning"><i class="fas fa-clock"></i> <?php echo $pendientes; ?> pendientes</span>
-                        </div>
-                    </div>
-                </div>
+<div class="row g-4">
+    <div class="col-md-3 col-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-body text-center">
+                <div class="mb-2"><i class="fas fa-file-alt fa-2x text-primary"></i></div>
+                <h5 class="card-title mb-1"><?php echo $total_solicitudes; ?></h5>
+                <div class="text-muted small">Total Solicitudes</div>
             </div>
         </div>
     </div>
-    
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card shadow h-100">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col-auto pe-3">
-                        <div class="icon-circle bg-success text-white">
-                            <i class="fas fa-users"></i>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="small fw-normal text-success text-uppercase mb-1">
-                            Total de Usuarios</div>
-                        <div class="h5 mb-0 fw-normal text-dark"><?php echo $total_usuarios; ?></div>
-                        <div class="mt-2 mb-0 text-muted small">
-                            <?php foreach($usuarios_por_rol as $rol): ?>
-                                <span class="me-2">
-                                    <i class="fas fa-circle" style="color: <?php echo $colores_roles[$rol['id']]; ?>"></i> 
-                                    <?php echo $rol['total']; ?> <?php echo strtolower($rol['nombre']); ?>(es)
-                                </span>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                </div>
+    <div class="col-md-3 col-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-body text-center">
+                <div class="mb-2"><i class="fas fa-users fa-2x text-success"></i></div>
+                <h5 class="card-title mb-1"><?php echo $total_usuarios; ?></h5>
+                <div class="text-muted small">Total Usuarios</div>
             </div>
         </div>
     </div>
-    
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card shadow h-100">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col-auto pe-3">
-                        <div class="icon-circle bg-info text-white">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="small fw-normal text-info text-uppercase mb-1">
-                            Tasa de Resolución</div>
-                        <div class="row no-gutters align-items-center">
-                            <div class="col-auto">
-                                <div class="h5 mb-0 me-3 fw-normal text-dark"><?php echo $tasa_resolucion; ?>%</div>
-                            </div>
-                            <div class="col">
-                                <div class="progress progress-sm mr-2">
-                                    <div class="progress-bar bg-info" role="progressbar" style="width: <?php echo $tasa_resolucion; ?>%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mt-2 mb-0 text-muted small">
-                            <span>Tiempo promedio: <?php echo $tiempo_global; ?> días</span>
-                        </div>
-                    </div>
-                </div>
+    <div class="col-md-3 col-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-body text-center">
+                <div class="mb-2"><i class="fas fa-lightbulb fa-2x text-warning"></i></div>
+                <h5 class="card-title mb-1"><?php echo $total_sugerencias; ?></h5>
+                <div class="text-muted small">Total Sugerencias</div>
             </div>
         </div>
     </div>
-    
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card shadow h-100">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col-auto pe-3">
-                        <div class="icon-circle bg-warning text-white">
-                            <i class="fas fa-lightbulb"></i>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="small fw-normal text-warning text-uppercase mb-1">
-                            Total de Sugerencias</div>
-                        <div class="h5 mb-0 fw-normal text-dark"><?php echo $total_sugerencias; ?></div>
-                        <div class="mt-2 mb-0 text-muted small">
-                            <?php
-                            // Obtener datos para sugerencias por estado
-                            $query_sugerencias_estado = "SELECT e.nombre, COUNT(s.id) as total 
-                                                        FROM sugerencias s 
-                                                        JOIN estados e ON s.estado_id = e.id 
-                                                        GROUP BY s.estado_id";
-                            $stmt_sugerencias_estado = $db->prepare($query_sugerencias_estado);
-                            $stmt_sugerencias_estado->execute();
-                            $sugerencias_por_estado = $stmt_sugerencias_estado->fetchAll(PDO::FETCH_ASSOC);
-                            
-                            foreach($sugerencias_por_estado as $estado_item):
-                                $icono = 'fas fa-circle';
-                                $clase = 'text-muted';
-                                
-                                if ($estado_item['nombre'] == 'Nueva' || $estado_item['nombre'] == 'En revisión') {
-                                    $icono = 'fas fa-hourglass-half';
-                                    $clase = 'text-warning';
-                                } elseif ($estado_item['nombre'] == 'Aprobada') {
-                                    $icono = 'fas fa-check-circle';
-                                    $clase = 'text-success';
-                                } elseif ($estado_item['nombre'] == 'Rechazada') {
-                                    $icono = 'fas fa-times-circle';
-                                    $clase = 'text-danger';
-                                }
-                            ?>
-                                <span class="me-2 <?php echo $clase; ?>">
-                                    <i class="<?php echo $icono; ?>"></i> 
-                                    <?php echo $estado_item['total']; ?> <?php echo strtolower($estado_item['nombre']); ?>
-                                </span>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                </div>
+    <div class="col-md-3 col-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-body text-center">
+                <div class="mb-2"><i class="fas fa-check-circle fa-2x text-info"></i></div>
+                <h5 class="card-title mb-1"><?php echo $tasa_resolucion; ?>%</h5>
+                <div class="text-muted small">Tasa de Resolución</div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Gráficos de análisis -->
-<div class="row">
-    <!-- Gráfico de evolución temporal de solicitudes -->
-    <div class="col-xl-8 col-lg-7 mb-4">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 fw-normal text-primary">
-                    <i class="fas fa-chart-area me-1"></i> Evolución de Solicitudes
-                </h6>
-                <div class="dropdown no-arrow">
-                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-end shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
-                        <div class="dropdown-header">Opciones:</div>
-                        <a class="dropdown-item" href="#" id="showYearView">Vista Anual</a>
-                        <a class="dropdown-item" href="#" id="showMonthView">Vista Mensual</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#" id="exportChartBtn">Exportar Datos</a>
-                    </div>
+<div class="row g-4 mt-2">
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-chart-line me-2"></i>Evolución de Solicitudes (12 meses)</span>
+                <div>
+                    <button class="btn btn-outline-secondary btn-sm me-1" id="showYearView"><i class="fas fa-calendar-alt"></i></button>
+                    <button class="btn btn-outline-secondary btn-sm me-1" id="showMonthView"><i class="fas fa-calendar"></i></button>
+                    <button class="btn btn-outline-primary btn-sm" id="exportChartBtn"><i class="fas fa-file-excel"></i></button>
                 </div>
             </div>
             <div class="card-body">
-                <div class="chart-area">
-                    <canvas id="solicitudesTimelineChart"></canvas>
-                </div>
+                <canvas id="solicitudesTimelineChart" height="120"></canvas>
             </div>
         </div>
     </div>
-    
-    <!-- Gráficos circulares -->
-    <div class="col-xl-4 col-lg-5 mb-4">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 fw-normal text-primary">
-                    <i class="fas fa-chart-pie me-1"></i> Distribución por Estado
-                </h6>
-                <div class="dropdown no-arrow">
-                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-end shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
-                        <div class="dropdown-header">Vistas:</div>
-                        <a class="dropdown-item" href="#" id="viewDoughnut">Vista Dona</a>
-                        <a class="dropdown-item" href="#" id="viewPie">Vista Pastel</a>
-                    </div>
+    <div class="col-lg-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-chart-pie me-2"></i>Por Estado</span>
+                <div>
+                    <button class="btn btn-outline-secondary btn-sm me-1" id="viewDoughnut"><i class="fas fa-dot-circle"></i></button>
+                    <button class="btn btn-outline-secondary btn-sm" id="viewPie"><i class="fas fa-chart-pie"></i></button>
                 </div>
             </div>
             <div class="card-body">
-                <div class="chart-pie pt-4 pb-2">
-                    <canvas id="solicitudesPorEstadoChart"></canvas>
-                </div>
-                <div class="mt-4 text-center small">
-                    <?php foreach($solicitudes_por_estado as $estado_item): ?>
-                        <span class="me-2">
-                            <i class="fas fa-circle" style="color: <?php echo $estado_item['color']; ?>"></i> <?php echo $estado_item['nombre']; ?>
-                        </span>
-                    <?php endforeach; ?>
-                </div>
+                <canvas id="solicitudesPorEstadoChart" height="180"></canvas>
             </div>
         </div>
-        
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 fw-normal text-primary">
-                    <i class="fas fa-tags me-1"></i> Solicitudes por Categoría
-                </h6>
+    </div>
+    <div class="col-lg-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white border-0">
+                <i class="fas fa-layer-group me-2"></i>Por Categoría
             </div>
             <div class="card-body">
-                <div class="chart-pie pt-4 pb-2">
-                    <canvas id="solicitudesPorCategoriaChart"></canvas>
-                </div>
-                <div class="mt-4 text-center small">
-                    <?php foreach($categorias_array as $index => $cat): ?>
-                        <?php if ($index < 3): ?>
-                        <span class="me-2">
-                            <i class="fas fa-circle" style="color: <?php echo $cat['color']; ?>"></i> <?php echo $cat['nombre']; ?>
-                        </span>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
-                    <?php if (count($categorias_array) > 3): ?>
-                        <span class="me-2">
-                            <i class="fas fa-circle text-gray-500"></i> Otras
-                        </span>
-                    <?php endif; ?>
-                </div>
+                <canvas id="solicitudesPorCategoriaChart" height="180"></canvas>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Actividad Reciente y Top Funcionarios -->
-<div class="row">
-    <!-- Actividad Reciente -->
-    <div class="col-lg-7 mb-4">
-        <div class="card shadow">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 fw-normal text-primary">
-                    <i class="fas fa-history me-1"></i> Actividad Reciente
-                </h6>
-                <a href="#" class="btn btn-sm btn-primary" id="verTodasActividadesBtn">
-                    Ver Todas
-                </a>
+<div class="row g-4 mt-2">
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-bolt me-2"></i>Actividad Reciente</span>
+                <button class="btn btn-outline-primary btn-sm" id="verTodasActividadesBtn"><i class="fas fa-list"></i> Ver todas</button>
             </div>
             <div class="card-body">
-                <div class="timeline timeline-xs">
-                    <?php foreach($actividad_reciente as $actividad): ?>
-                    <div class="timeline-item">
-                        <div class="timeline-item-marker">
-                            <div class="timeline-item-marker-indicator" style="background-color: <?php echo $actividad['color']; ?>">
-                                <?php if ($actividad['tipo'] == 'solicitud'): ?>
-                                    <i class="fas fa-clipboard-list"></i>
-                                <?php elseif ($actividad['tipo'] == 'sugerencia'): ?>
-                                    <i class="fas fa-lightbulb"></i>
-                                <?php else: ?>
-                                    <i class="fas fa-user"></i>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                        <div class="timeline-item-content pt-0">
-                            <div class="timeline-item-title">
-                                <?php if ($actividad['tipo'] == 'solicitud'): ?>
-                                    <a href="index.php?page=admin_ver_solicitud&id=<?php echo $actividad['id']; ?>">
-                                        Nueva solicitud
-                                    </a>
-                                <?php elseif ($actividad['tipo'] == 'sugerencia'): ?>
-                                    <a href="index.php?page=admin_ver_sugerencia&id=<?php echo $actividad['id']; ?>">
-                                        Nueva sugerencia
-                                    </a>
-                                <?php else: ?>
-                                    <a href="index.php?page=admin_ver_usuario&id=<?php echo $actividad['id']; ?>">
-                                        Nuevo usuario
-                                    </a>
-                                <?php endif; ?>
-                            </div>
-                            <div class="timeline-item-subtitle">
-                                <?php echo Security::escapeOutput($actividad['descripcion']); ?>
-                            </div>
-                            <div class="timeline-item-content d-flex justify-content-between">
-                                <div>
-                                    <small class="text-muted">
-                                        Por <?php echo Security::escapeOutput($actividad['usuario_nombre'] . ' ' . $actividad['usuario_apellidos']); ?>
-                                    </small>
-                                </div>
-                                <div>
-                                    <span class="badge rounded-pill" style="background-color: <?php echo $actividad['color']; ?>">
-                                        <?php echo $actividad['estado']; ?>
-                                    </span>
+                <ul class="list-group list-group-flush">
+                    <?php foreach($actividad_reciente as $item): ?>
+                        <li class="list-group-item d-flex align-items-center">
+                            <?php if($item['tipo'] == 'solicitud'): ?>
+                                <span class="badge me-2" style="background:<?php echo $item['color']; ?>;"><i class="fas fa-file-alt"></i></span>
+                            <?php elseif($item['tipo'] == 'sugerencia'): ?>
+                                <span class="badge me-2" style="background:<?php echo $item['color']; ?>;"><i class="fas fa-lightbulb"></i></span>
+                            <?php else: ?>
+                                <span class="badge me-2" style="background:<?php echo $item['color']; ?>;"><i class="fas fa-user-plus"></i></span>
+                            <?php endif; ?>
+                            <div>
+                                <div class="fw-bold"><?php echo htmlspecialchars($item['descripcion']); ?></div>
+                                <div class="small text-muted">
+                                    <?php echo htmlspecialchars($item['usuario_nombre'] . ' ' . $item['usuario_apellidos']); ?> &middot; 
+                                    <?php echo date('d/m/Y H:i', strtotime($item['fecha'])); ?>
                                 </div>
                             </div>
-                            <div class="timeline-item-time">
-                                <?php echo date('d/m/Y H:i', strtotime($actividad['fecha'])); ?>
-                            </div>
-                        </div>
-                    </div>
+                        </li>
                     <?php endforeach; ?>
-                </div>
+                </ul>
             </div>
         </div>
     </div>
-    
-    <!-- Top Funcionarios -->
-    <div class="col-lg-5 mb-4">
-        <div class="card shadow">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 fw-normal text-primary">
-                    <i class="fas fa-trophy me-1"></i> Top Funcionarios
-                </h6>
-                <a href="index.php?page=admin_funcionarios" class="btn btn-sm btn-primary">
-                    Ver Todos
-                </a>
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-user-tie me-2"></i>Top Funcionarios</span>
+                <a href="funcionarios.php" class="btn btn-outline-primary btn-sm"><i class="fas fa-users"></i> Ver todos</a>
             </div>
             <div class="card-body">
-                <?php if (count($top_funcionarios) > 0): ?>
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover">
-                            <thead class="table-light">
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nombre</th>
+                                <th>Solicitudes Resueltas</th>
+                                <th>Tiempo Promedio (días)</th>
+                                <th>Ciudadanos Atendidos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach($top_funcionarios as $i => $func): ?>
                                 <tr>
-                                    <th>Funcionario</th>
-                                    <th>Resueltas</th>
-                                    <th>Tiempo</th>
-                                    <th>Ciudadanos</th>
+                                    <td><?php echo $i+1; ?></td>
+                                    <td><?php echo htmlspecialchars($func['nombre'] . ' ' . $func['apellidos']); ?></td>
+                                    <td><?php echo $func['solicitudes_resueltas']; ?></td>
+                                    <td><?php echo $func['tiempo_promedio'] ? round($func['tiempo_promedio'],1) : 'N/A'; ?></td>
+                                    <td><?php echo $func['ciudadanos_atendidos']; ?></td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach($top_funcionarios as $funcionario): ?>
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar avatar-sm me-2">
-                                                <div class="avatar-title rounded-circle bg-primary text-white">
-                                                    <?php echo strtoupper(substr($funcionario['nombre'], 0, 1) . substr($funcionario['apellidos'], 0, 1)); ?>
-                                                </div>
-                                            </div>
-                                            <div class="ms-2">
-                                                <a href="index.php?page=admin_ver_usuario&id=<?php echo $funcionario['id']; ?>">
-                                                    <?php echo Security::escapeOutput($funcionario['nombre'] . ' ' . $funcionario['apellidos']); ?>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-success">
-                                            <?php echo $funcionario['solicitudes_resueltas']; ?>
-                                        </span>
-                                    </td>
-                                    <td class="text-center">
-                                        <?php echo round($funcionario['tiempo_promedio'], 1); ?> días
-                                    </td>
-                                    <td class="text-center">
-                                        <?php echo $funcionario['ciudadanos_atendidos']; ?>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                <?php else: ?>
-                    <div class="alert alert-info mb-0">
-                        <i class="fas fa-info-circle me-1"></i> No hay datos suficientes para mostrar.
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
-        
-        <!-- Tiempo Promedio por Categoría -->
-        <div class="card shadow mt-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 fw-normal text-primary">
-                    <i class="fas fa-hourglass-half me-1"></i> Tiempo Promedio por Categoría
-                </h6>
-            </div>
-            <div class="card-body">
-                <?php if (count($tiempo_categoria) > 0): ?>
-                    <?php foreach($tiempo_categoria as $cat): ?>
-                    <h4 class="small fw-normal">
-                        <?php echo Security::escapeOutput($cat['nombre']); ?>
-                        <span class="float-end"><?php echo round($cat['tiempo_promedio'], 1); ?> días</span>
-                    </h4>
-                    <div class="progress mb-4">
-                        <div class="progress-bar" role="progressbar" style="width: <?php echo min(100, round($cat['tiempo_promedio'] * 10)); ?>%; background-color: <?php echo $cat['color']; ?>"></div>
-                    </div>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <div class="alert alert-info mb-0">
-                        <i class="fas fa-info-circle me-1"></i> No hay datos suficientes para mostrar.
-                    </div>
-                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Scripts para gráficos -->
+<!-- Scripts de gráficos y botones -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Gráfico de evolución temporal de solicitudes
-    const timelineCtx = document.getElementById('solicitudesTimelineChart').getContext('2d');
-    const timelineChart = new Chart(timelineCtx, {
-        type: 'line',
-        data: {
-            labels: [
-                <?php 
-                foreach($timeline_data as $data) {
-                    $fecha = date('M Y', strtotime($data['mes'] . '-01'));
-                    echo "'" . $fecha . "',";
-                }
-                ?>
-            ],
-            datasets: [{
-                label: 'Total de Solicitudes',
-                data: [
-                    <?php 
-                    foreach($timeline_data as $data) {
-                        echo $data['total'] . ",";
-                    }
-                    ?>
-                ],
-                backgroundColor: 'rgba(78, 115, 223, 0.05)',
-                borderColor: 'rgba(78, 115, 223, 1)',
-                pointRadius: 3,
-                pointBackgroundColor: 'rgba(78, 115, 223, 1)',
-                pointBorderColor: '#fff',
-                pointHoverRadius: 5,
-                pointHoverBackgroundColor: 'rgba(78, 115, 223, 1)',
-                pointHoverBorderColor: '#fff',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.3
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            layout: {
-                padding: {
-                    left: 10,
-                    right: 25,
-                    top: 25,
-                    bottom: 0
-                }
-            },
-            scales: {
-                x: {
-                    grid: {
-                        display: false,
-                        drawBorder: false
-                    },
-                    ticks: {
-                        maxTicksLimit: 7
-                    }
-                },
-                y: {
-                    grid: {
-                        color: "rgb(234, 236, 244)",
-                        drawBorder: false,
-                        borderDash: [2],
-                        zeroLineBorderDash: [2]
-                    },
-                    ticks: {
-                        maxTicksLimit: 5,
-                        padding: 10,
-                        precision: 0
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: "rgb(255,255,255)",
-                    bodyColor: "#858796",
-                    titleMarginBottom: 10,
-                    titleColor: '#6e707e',
-                    titleFont: {
-                        size: 14
-                    },
-                    borderColor: '#dddfeb',
-                    borderWidth: 1,
-                    xPadding: 15,
-                    yPadding: 15,
-                    displayColors: false,
-                    intersect: false,
-                    mode: 'index',
-                    caretPadding: 10
-                }
-            }
-        }
-    });
-
-    // Gráfico de solicitudes por estado
-    const estadoCtx = document.getElementById('solicitudesPorEstadoChart').getContext('2d');
-    const estadoChart = new Chart(estadoCtx, {
-        type: 'doughnut',
-        data: {
-            labels: [
-                <?php foreach($solicitudes_por_estado as $estado_item): ?>
-                '<?php echo $estado_item['nombre']; ?> (<?php echo $estado_item['total']; ?>)',
-                <?php endforeach; ?>
-            ],
-            datasets: [{
-                data: [
-                    <?php foreach($solicitudes_por_estado as $estado_item): ?>
-                    <?php echo $estado_item['total']; ?>,
-                    <?php endforeach; ?>
-                ],
-                backgroundColor: [
-                    <?php foreach($solicitudes_por_estado as $estado_item): ?>
-                    '<?php echo $estado_item['color']; ?>',
-                    <?php endforeach; ?>
-                ],
-                hoverBackgroundColor: [
-                    <?php foreach($solicitudes_por_estado as $estado_item): ?>
-                    '<?php echo $estado_item['color']; ?>',
-                    <?php endforeach; ?>
-                ],
-                hoverBorderColor: "rgba(234, 236, 244, 1)",
-                borderWidth: 2,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: "rgb(255,255,255)",
-                    bodyColor: "#858796",
-                    borderColor: '#dddfeb',
-                    borderWidth: 1,
-                    xPadding: 15,
-                    yPadding: 15,
-                    displayColors: false,
-                    caretPadding: 10,
-                }
-            },
-            cutout: '70%'
-        }
-    });
-
-    // Gráfico de solicitudes por categoría
-    const categoriaCtx = document.getElementById('solicitudesPorCategoriaChart').getContext('2d');
-    const categoriaChart = new Chart(categoriaCtx, {
-        type: 'doughnut',
-        data: {
-            labels: [
-                <?php 
-                $count = 0;
-                $otros_total = 0;
-                foreach($categorias_array as $index => $cat): 
-                    if ($count < 3):
-                        echo "'" . $cat['nombre'] . " (" . $cat['total'] . ")',";
-                        $count++;
-                    else:
-                        $otros_total += $cat['total'];
-                    endif;
-                endforeach;
-                if ($otros_total > 0):
-                    echo "'Otros (" . $otros_total . ")',";
-                endif;
-                ?>
-            ],
-            datasets: [{
-                data: [
-                    <?php 
-                    $count = 0;
-                    foreach($categorias_array as $index => $cat): 
-                        if ($count < 3):
-                            echo $cat['total'] . ",";
-                            $count++;
-                        endif;
-                    endforeach;
-                    if ($otros_total > 0):
-                        echo $otros_total . ",";
-                    endif;
-                    ?>
-                ],
-                backgroundColor: [
-                    <?php 
-                    $count = 0;
-                    foreach($categorias_array as $index => $cat): 
-                        if ($count < 3):
-                            echo "'" . $cat['color'] . "',";
-                            $count++;
-                        endif;
-                    endforeach;
-                    if ($otros_total > 0):
-                        echo "'#7c8798',";
-                    endif;
-                    ?>
-                ],
-                hoverBackgroundColor: [
-                    <?php 
-                    $count = 0;
-                    foreach($categorias_array as $index => $cat): 
-                        if ($count < 3):
-                            echo "'" . $cat['color'] . "',";
-                            $count++;
-                        endif;
-                    endforeach;
-                    if ($otros_total > 0):
-                        echo "'#5a6268',";
-                    endif;
-                    ?>
-                ],
-                hoverBorderColor: "rgba(234, 236, 244, 1)",
-                borderWidth: 2,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: "rgb(255,255,255)",
-                    bodyColor: "#858796",
-                    borderColor: '#dddfeb',
-                    borderWidth: 1,
-                    xPadding: 15,
-                    yPadding: 15,
-                    displayColors: false,
-                    caretPadding: 10,
-                }
-            },
-            cutout: '70%'
-        }
-    });
-
-    // Cambiar tipo de gráfico de estado
-    document.getElementById('viewDoughnut').addEventListener('click', function(e) {
-        e.preventDefault();
-        estadoChart.config.type = 'doughnut';
-        estadoChart.update();
-    });
-
-    document.getElementById('viewPie').addEventListener('click', function(e) {
-        e.preventDefault();
-        estadoChart.config.type = 'pie';
-        estadoChart.update();
-    });
-
-    // Simular funcionalidad para los botones de exportación
+    // --- Botón Actualizar ---
     document.getElementById('refreshDashboard').addEventListener('click', function() {
-        Swal.fire({
-            title: 'Actualizando...',
-            text: 'Obteniendo datos más recientes',
-            timer: 1500,
-            timerProgressBar: true,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        }).then(() => {
-            window.location.reload();
-        });
+        location.reload();
     });
 
-    document.getElementById('exportPDF').addEventListener('click', function(e) {
-        e.preventDefault();
-        Swal.fire({
-            title: 'Exportando PDF',
-            text: 'El informe se está generando',
-            icon: 'info',
-            showConfirmButton: false,
-            timer: 2000
-        });
-    });
-
-    document.getElementById('exportExcel').addEventListener('click', function(e) {
-        e.preventDefault();
-        Swal.fire({
-            title: 'Exportando Excel',
-            text: 'Los datos se están exportando',
-            icon: 'info',
-            showConfirmButton: false,
-            timer: 2000
-        });
-    });
-
+    // --- Botón Imprimir ---
     document.getElementById('printDashboard').addEventListener('click', function(e) {
         e.preventDefault();
         window.print();
     });
 
+    // --- Botón Exportar PDF ---
+    document.getElementById('exportPDF').addEventListener('click', function(e) {
+        e.preventDefault();
+        import('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js').then(() => {
+            html2canvas(document.body).then(function(canvas) {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new window.jspdf.jsPDF('l', 'mm', 'a4');
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+                const imgWidth = pageWidth;
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                pdf.save('dashboard.pdf');
+            });
+        });
+    });
+
+    // --- Botón Exportar Excel ---
+    document.getElementById('exportExcel').addEventListener('click', function(e) {
+        e.preventDefault();
+        // Exportar solo las tablas principales
+        let wb = XLSX.utils.book_new();
+        // Top Funcionarios
+        let table = document.querySelector('.table');
+        if (table) {
+            let ws = XLSX.utils.table_to_sheet(table);
+            XLSX.utils.book_append_sheet(wb, ws, "Top Funcionarios");
+        }
+        XLSX.writeFile(wb, "dashboard.xlsx");
+    });
+
+    // --- Botón Ver Todas Actividades ---
     document.getElementById('verTodasActividadesBtn').addEventListener('click', function(e) {
         e.preventDefault();
-        window.location.href = 'index.php?page=admin_actividad';
+        alert('Funcionalidad de ver todas las actividades próximamente.');
+    });
+
+    // --- Botón Ver Todos Funcionarios ---
+    // Ya es un enlace, no requiere JS
+
+    // --- Botón Exportar Datos de Gráfica ---
+    document.getElementById('exportChartBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        let labels = <?php echo json_encode(array_column($timeline_data, 'mes')); ?>;
+        let data = <?php echo json_encode(array_column($timeline_data, 'total')); ?>;
+        let ws = XLSX.utils.aoa_to_sheet([['Mes', 'Solicitudes']].concat(labels.map((l, i) => [l, data[i]])));
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Evolucion");
+        XLSX.writeFile(wb, "evolucion_solicitudes.xlsx");
+    });
+
+    // --- Cambiar vista de gráfica (anual/mensual) ---
+    document.getElementById('showYearView').addEventListener('click', function(e) {
+        e.preventDefault();
+        alert('Vista anual próximamente.');
+    });
+    document.getElementById('showMonthView').addEventListener('click', function(e) {
+        e.preventDefault();
+        alert('Vista mensual próximamente.');
+    });
+
+    // --- Cambiar tipo de gráfica de estados ---
+    document.getElementById('viewDoughnut').addEventListener('click', function(e) {
+        e.preventDefault();
+        solicitudesPorEstadoChart.config.type = 'doughnut';
+        solicitudesPorEstadoChart.update();
+    });
+    document.getElementById('viewPie').addEventListener('click', function(e) {
+        e.preventDefault();
+        solicitudesPorEstadoChart.config.type = 'pie';
+        solicitudesPorEstadoChart.update();
+    });
+
+    // --- Gráfica de evolución de solicitudes ---
+    const timelineLabels = <?php echo json_encode(array_column($timeline_data, 'mes')); ?>;
+    const timelineData = <?php echo json_encode(array_column($timeline_data, 'total')); ?>;
+    const ctxTimeline = document.getElementById('solicitudesTimelineChart').getContext('2d');
+    const solicitudesTimelineChart = new Chart(ctxTimeline, {
+        type: 'line',
+        data: {
+            labels: timelineLabels,
+            datasets: [{
+                label: 'Solicitudes',
+                data: timelineData,
+                fill: true,
+                backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                borderColor: 'rgba(78, 115, 223, 1)',
+                tension: 0.4,
+                pointBackgroundColor: 'rgba(78, 115, 223, 1)'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: { title: { display: true, text: 'Mes' } },
+                y: { title: { display: true, text: 'Solicitudes' }, beginAtZero: true }
+            }
+        }
+    });
+
+    // --- Gráfica de solicitudes por estado ---
+    const estadoLabels = <?php echo json_encode(array_column($solicitudes_por_estado, 'nombre')); ?>;
+    const estadoData = <?php echo json_encode(array_column($solicitudes_por_estado, 'total')); ?>;
+    const estadoColors = <?php echo json_encode(array_column($solicitudes_por_estado, 'color')); ?>;
+    const ctxEstado = document.getElementById('solicitudesPorEstadoChart').getContext('2d');
+    window.solicitudesPorEstadoChart = new Chart(ctxEstado, {
+        type: 'doughnut',
+        data: {
+            labels: estadoLabels,
+            datasets: [{
+                data: estadoData,
+                backgroundColor: estadoColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // --- Gráfica de solicitudes por categoría ---
+    const categoriaLabels = <?php echo json_encode(array_column($categorias_array, 'nombre')); ?>;
+    const categoriaData = <?php echo json_encode(array_column($categorias_array, 'total')); ?>;
+    const categoriaColors = <?php echo json_encode(array_column($categorias_array, 'color')); ?>;
+    const ctxCategoria = document.getElementById('solicitudesPorCategoriaChart').getContext('2d');
+    new Chart(ctxCategoria, {
+        type: 'pie',
+        data: {
+            labels: categoriaLabels,
+            datasets: [{
+                data: categoriaData,
+                backgroundColor: categoriaColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
     });
 });
 </script>
-
-<!-- Estilos adicionales para timeline -->
-<style>
-.timeline {
-    position: relative;
-    padding-left: 1rem;
-    margin: 0 0 0 1rem;
-    color: #6c757d;
-    font-family: Arial, sans-serif;
-}
-.timeline:before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 2px;
-    background-color: #e9ecef;
-}
-.timeline-item {
-    position: relative;
-    padding-bottom: 1.5rem;
-}
-.timeline-item:last-child {
-    padding-bottom: 0;
-}
-.timeline-item-marker {
-    position: absolute;
-    left: -1.5rem;
-    width: 1rem;
-    height: 1rem;
-    margin-top: 0.25rem;
-}
-.timeline-item-marker-indicator {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 1.5rem;
-    width: 1.5rem;
-    border-radius: 100%;
-    color: #fff;
-    font-size: 0.675rem;
-}
-.timeline-item-content {
-    padding-left: 0.75rem;
-    padding-top: 0.25rem;
-}
-.timeline-item-title {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #343a40;
-}
-.timeline-item-subtitle {
-    margin-top: 0.25rem;
-    font-size: 0.8rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.timeline-item-time {
-    margin-top: 0.25rem;
-    font-size: 0.75rem;
-    color: #adb5bd;
-}
-.avatar {
-    display: inline-flex;
-    height: 2rem;
-    width: 2rem;
-    position: relative;
-}
-.avatar.avatar-sm {
-    height: 1.5rem;
-    width: 1.5rem;
-}
-.avatar-title {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-weight: 600;
-    font-size: 0.75rem;
-}
-.icon-circle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 2.5rem;
-    width: 2.5rem;
-    border-radius: 100%;
-    font-size: 1rem;
-}
-</style>
-|

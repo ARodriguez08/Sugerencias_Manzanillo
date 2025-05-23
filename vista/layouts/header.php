@@ -33,6 +33,11 @@ if (session_status() === PHP_SESSION_NONE) {
     <link rel="stylesheet" href="assets/css/styles.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../admin/assets/css/diseño.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../admin/assets/js/graficos.js"></script>
+
+
 </head>
 <body>
     <?php 
